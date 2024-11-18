@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,8 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
+import pandas as pd
 import random
 import re
+import os
 
 TARGET_URL = "https://www.redfin.com/"
 
@@ -16,15 +17,21 @@ def main():
     locations = [
         ["Kent","WA"]
     ]
+    
     data = []
     for location in locations:
         listings_html = find_listings(location[0],location[1])
         data += process_listings(listings_html)
-    print(len(data))
-    print(data)
-        
-
     
+    df = pd.DataFrame(data)
+    
+    folder_path = "./Data/"
+    file_name = "listings-data.csv"
+    os.makedirs(folder_path, exist_ok=True) 
+    csv_path = os.path.join(folder_path, file_name)
+
+    df.to_csv(csv_path, index=False)
+
 def initialize_driver():
     user_agents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
@@ -38,7 +45,6 @@ def initialize_driver():
     user_agent = random.choice(user_agents)
     options = webdriver.ChromeOptions()
     options.add_argument(f"user-agent={user_agent}")
-
 
     driver = webdriver.Chrome(options=options)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -59,7 +65,7 @@ def filter_string(str):
 def extract_sqft(listing_soup):
     try:
         sqft = listing_soup.find("span", class_="bp-Homecard__LockedStat--value").get_text(strip=True)
-        return filter_string(sqft) if sqft else None
+        return int(filter_string(sqft)) if sqft else None
     except Exception as e:
         print(f"Could not retrieve sqft: {e}")
         return None
@@ -67,7 +73,7 @@ def extract_sqft(listing_soup):
 def extract_price(listing_soup):
     try:
         price = listing_soup.find("span", class_="bp-Homecard__Price--value").get_text(strip=True)
-        return filter_string(price) if price else None
+        return int(filter_string(price)) if price else None
     except Exception as e:
         print(f"Could not retrieve price: {e}")
         return None
@@ -150,7 +156,6 @@ def scroll_page(driver, scroll_step=1000):
         current_position += scroll_step
         sleep(0.5)
                 
-
 def find_listings(city, state):
     try:
         driver = initialize_driver()
@@ -207,7 +212,6 @@ def find_listings(city, state):
         driver.quit()
 
     return listings_html
-
         
 def process_listings(listings_html):
     listings_data = []
@@ -219,7 +223,7 @@ def process_listings(listings_html):
             data = {
                 "sqft": (sqft := extract_sqft(listing_soup)),
                 "price": (price := extract_price(listing_soup)),
-                "price/sqft": (float(sqft)/float(price)) if price and sqft else None,
+                "price/sqft": (float(price)/float(sqft)) if price and sqft else None,
                 "zip": extract_zip(listing_soup),
                 "city": extract_city(listing_soup),
                 "state": extract_state(listing_soup),
@@ -232,10 +236,8 @@ def process_listings(listings_html):
             listings_data.append(data)
         except Exception as e:
             print(f"Unexpected error has occurred: {e}")
-
             
     return listings_data
-
     
 if __name__ == "__main__":
     main()
