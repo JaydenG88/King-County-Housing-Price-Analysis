@@ -7,7 +7,6 @@ from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
 import pandas as pd
-import datetime
 import random
 import re
 import os
@@ -42,8 +41,7 @@ def main():
     df = pd.DataFrame(data)
     
     folder_path = "./Data/"
-    timestamp = datetime.date.today()
-    file_name = f"listings_data_{timestamp}.csv"
+    file_name = "listings_data.csv"
     os.makedirs(folder_path, exist_ok=True) 
     csv_path = os.path.join(folder_path, file_name)
 
