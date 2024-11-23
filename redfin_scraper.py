@@ -266,17 +266,17 @@ def process_listings(listings_html):
             listing_soup = BeautifulSoup(str(listing), "html.parser")
 
             data = {
-                "sqft": (sqft := extract_sqft(listing_soup)),
-                "price": (price := extract_price(listing_soup)),
-                "price/sqft": (float(price)/float(sqft)) if price and sqft else None,
-                "zip": extract_zip(listing_soup),
-                "city": extract_city(listing_soup),
-                "state": extract_state(listing_soup),
-                "street_address": extract_street_address(listing_soup),
-                "bedrooms": extract_beds(listing_soup),
-                "bathrooms": extract_baths(listing_soup),  
-                "url": extract_url(listing_soup),
-                "img": extract_img(listing_soup)
+                "Square Feet": (sqft := extract_sqft(listing_soup)),
+                "Price": (price := extract_price(listing_soup)),
+                "Price/Sqft": (float(price)/float(sqft)) if price and sqft else None,
+                "Zip": extract_zip(listing_soup),
+                "City": extract_city(listing_soup),
+                "State": extract_state(listing_soup),
+                "Street Address": extract_street_address(listing_soup),
+                "Bedrooms": extract_beds(listing_soup),
+                "Bathrooms": extract_baths(listing_soup),  
+                "URL": extract_url(listing_soup),
+                "Image": extract_img(listing_soup)
             }
             listings_data.append(data)
             processed_count += 1
