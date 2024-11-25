@@ -266,9 +266,8 @@ def process_listings(listings_html):
             listing_soup = BeautifulSoup(str(listing), "html.parser")
 
             data = {
-                "Square Feet": (sqft := extract_sqft(listing_soup)),
-                "Price": (price := extract_price(listing_soup)),
-                "Price/Sqft": (float(price)/float(sqft)) if price and sqft else None,
+                "Square Feet": (extract_sqft(listing_soup)),
+                "Price": (extract_price(listing_soup)),
                 "Zip": extract_zip(listing_soup),
                 "City": extract_city(listing_soup),
                 "State": extract_state(listing_soup),
