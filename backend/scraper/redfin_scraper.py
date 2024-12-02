@@ -40,8 +40,8 @@ def main():
     
     df = pd.DataFrame(data)
     
-    folder_path = "./Data/"
-    file_name = "listings_data.csv"
+    folder_path = "./data/"
+    file_name = "raw_listings_data.csv"
     os.makedirs(folder_path, exist_ok=True) 
     csv_path = os.path.join(folder_path, file_name)
 
