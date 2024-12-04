@@ -13,7 +13,7 @@ import os
 
 TARGET_URL = "https://www.redfin.com/"
 
-def main():
+def main():    
     locations = [
         ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
         ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
@@ -36,17 +36,17 @@ def main():
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
-        sleep(30)
+        sleep(3)
     
     df = pd.DataFrame(data)
     
-    folder_path = "./data/"
     file_name = "raw_listings_data.csv"
-    os.makedirs(folder_path, exist_ok=True) 
-    csv_path = os.path.join(folder_path, file_name)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_folder = os.path.join(script_dir, '..', 'data')
+    file_path = os.path.join(data_folder, file_name)
 
-    df.to_csv(csv_path, index=False)
-    print(f"Listings data sucessfully converted to CSV: {csv_path}")
+    df.to_csv(file_path, index=False)
+    print(f"Listings data sucessfully converted to CSV: {file_path}")
 
 def initialize_driver():
     user_agents = [
