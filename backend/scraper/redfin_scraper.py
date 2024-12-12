@@ -6,14 +6,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
-import pandas as pd
+from pymongo import MongoClient
+from dotenv import load_dotenv
 import random
 import re
 import os
 
 TARGET_URL = "https://www.redfin.com/"
 
-def main():    
+def main():   
+
     locations = [
         ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
         ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
@@ -38,15 +40,20 @@ def main():
             data += process_listings(listings_html)
         sleep(3)
     
-    df = pd.DataFrame(data)
-    
-    file_name = "raw_listings_data.csv"
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_folder = os.path.join(script_dir, '..', 'data')
-    file_path = os.path.join(data_folder, file_name)
+    load_dotenv()
+    db_password = os.getenv("MONGODB_PWD")
+    connection_string = f"mongodb+srv://jayg8868:{db_password}@king-county-housing.mnhm7.mongodb.net/?retryWrites=true&w=majority&appName=king-county-housing"
+    try:
+        client = MongoClient(connection_string)
 
-    df.to_csv(file_path, index=False)
-    print(f"Listings data sucessfully converted to CSV: {file_path}")
+        housing_data = client.housing_data
+        raw_king_co_listings_data = housing_data.raw_king_co_listings_data
+        raw_king_co_listings_data.drop()
+        raw_king_co_listings_data.insert_many(data)
+        print(f"Successfully uploaded {len(data)} documents to raw_king_co_houses_data")
+        
+    except Exception as e:
+        print(f"Data could not be stored: {e}")
 
 def initialize_driver():
     user_agents = [
