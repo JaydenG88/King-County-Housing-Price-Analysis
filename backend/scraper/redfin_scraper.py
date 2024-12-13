@@ -6,16 +6,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
-from dotenv import load_dotenv
+from database.db_setup import get_database
 import random
 import re
-import os
+
 
 TARGET_URL = "https://www.redfin.com/"
 
 def main():   
-
     locations = [
         ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
         ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
@@ -40,13 +38,10 @@ def main():
             data += process_listings(listings_html)
         sleep(3)
     
-    load_dotenv()
-    db_password = os.getenv("MONGODB_PWD")
-    connection_string = f"mongodb+srv://jayg8868:{db_password}@king-county-housing.mnhm7.mongodb.net/?retryWrites=true&w=majority&appName=king-county-housing"
-    try:
-        client = MongoClient(connection_string)
 
-        housing_data = client.housing_data
+    try:
+        housing_data = get_database()
+
         raw_king_co_listings_data = housing_data.raw_king_co_listings_data
         raw_king_co_listings_data.drop()
         raw_king_co_listings_data.insert_many(data)
