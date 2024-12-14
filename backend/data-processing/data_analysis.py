@@ -3,23 +3,15 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
-from dotenv import load_dotenv
-from pymongo import MongoClient
 from database.db_setup import get_database
-import os
-
-load_dotenv()
-db_password = os.getenv("MONGODB_PWD")
-connection_string = f"mongodb+srv://jayg8868:{db_password}@king-county-housing.mnhm7.mongodb.net/?retryWrites=true&w=majority&appName=king-county-housing"
 
 try:
-    client = MongoClient(connection_string)
+    housing_data = get_database()
     
-    housing_data = client.housing_data
     cleaned_king_co_listings_data = housing_data.cleaned_king_co_listings_data
     
-    raw_data = list(cleaned_king_co_listings_data.find())
-    df = pd.DataFrame(raw_data)
+    cleaned_data = cleaned_king_co_listings_data.find()
+    df = pd.DataFrame(list(cleaned_data))
     
     if '_id' in df.columns:
             df = df.drop(columns=['_id'])
