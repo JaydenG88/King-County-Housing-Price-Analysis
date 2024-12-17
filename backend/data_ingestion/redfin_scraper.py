@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
+from datetime import date
 from database.db_setup import get_database
 import random
 import re
@@ -13,7 +14,7 @@ import re
 
 TARGET_URL = "https://www.redfin.com/"
 
-def main():   
+def get_data():   
     locations = [
         ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
         ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
@@ -41,7 +42,6 @@ def main():
 
     try:
         housing_data = get_database()
-
         raw_king_co_listings_data = housing_data.raw_king_co_listings_data
         raw_king_co_listings_data.drop()
         raw_king_co_listings_data.insert_many(data)
@@ -268,16 +268,17 @@ def process_listings(listings_html):
             listing_soup = BeautifulSoup(str(listing), "html.parser")
 
             data = {
-                "Square Feet": (extract_sqft(listing_soup)),
-                "Price": (extract_price(listing_soup)),
-                "Zip": extract_zip(listing_soup),
-                "City": extract_city(listing_soup),
-                "State": extract_state(listing_soup),
-                "Street Address": extract_street_address(listing_soup),
-                "Bedrooms": extract_beds(listing_soup),
-                "Bathrooms": extract_baths(listing_soup),  
+                "sqft": (extract_sqft(listing_soup)),
+                "price": (extract_price(listing_soup)),
+                "zip": extract_zip(listing_soup),
+                "city": extract_city(listing_soup),
+                "state": extract_state(listing_soup),
+                "street_address": extract_street_address(listing_soup),
+                "bedrooms": extract_beds(listing_soup),
+                "bathrooms": extract_baths(listing_soup),  
                 "URL": extract_url(listing_soup),
-                "Image": extract_img(listing_soup)
+                "image": extract_img(listing_soup),
+                "date": str(date.today())
             }
             listings_data.append(data)
             processed_count += 1
@@ -287,5 +288,3 @@ def process_listings(listings_html):
     print(f"Sucessfully processed: {processed_count} out of {len(listings_html)}")
     return listings_data
     
-if __name__ == "__main__":
-    main()
