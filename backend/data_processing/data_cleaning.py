@@ -34,7 +34,6 @@ def initialize_df():
         
     return pd.DataFrame()
 
-    
 def handle_missing_values(df):
     for cols in STRING_COLUMNS:
         df[cols]= df[cols].fillna("")
@@ -51,6 +50,7 @@ def standardize_data_types(df):
 
     for col in STRING_COLUMNS:
         df[col] = df[col].astype(str)
+    df["date"] = pd.to_datetime(df['date'])  
         
     return df
 
@@ -85,7 +85,7 @@ def store_data_to_DB(df):
 
     try:
         cleaned_king_co_listings_data = HOUSING_DATA_DB.cleaned_king_co_listings_data
-        cleaned_king_co_listings_data.insert_many(df_dict)
+        cleaned_king_co_listings_data.insert_many(df_dict, ordered=False)
 
         print("Cleaned dataset saved to DB successfully!")
         

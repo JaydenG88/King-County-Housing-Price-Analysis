@@ -14,7 +14,8 @@ import re
 
 TARGET_URL = "https://www.redfin.com/"
 
-def get_data():   
+def get_data():  
+ 
     locations = [
         ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
         ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
@@ -31,24 +32,26 @@ def get_data():
         ["Tukwila", "WA"], ["Woodinville", "WA"], ["Yarrow", "WA"]
     ]
     
+    
     data = []
     for location in locations:
         driver = search_location(location[0],location[1])
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
-        sleep(3)
+        sleep(random.uniform(1,3))
     
 
     try:
         housing_data = get_database()
         raw_king_co_listings_data = housing_data.raw_king_co_listings_data
         raw_king_co_listings_data.drop()
-        raw_king_co_listings_data.insert_many(data)
+        raw_king_co_listings_data.insert_many(data, ordered=False)
         print(f"Successfully uploaded {len(data)} documents to raw_king_co_houses_data")
-        
+  
     except Exception as e:
         print(f"Data could not be stored: {e}")
+        
 
 def initialize_driver():
     user_agents = [
@@ -172,17 +175,18 @@ def scroll_page(driver, scroll_step=1000):
     while current_position < max_scrolls:
         driver.execute_script(f"window.scrollBy(0, {scroll_step});")
         current_position += scroll_step
-        sleep(0.5)
+        sleep(0.25)
                 
 def search_location(city, state):
     try:
         driver = initialize_driver()
         driver.get(TARGET_URL)
         
-        sleep(random.uniform(2, 5))  
         input_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "search-input-box"))
+            EC.visibility_of_element_located((By.CLASS_NAME, "search-input-box"))
         )
+        
+        sleep(random.uniform(3,5))
         input_element.send_keys(f"{city} {state}" + Keys.ENTER)
 
         WebDriverWait(driver, 10).until(
@@ -192,7 +196,7 @@ def search_location(city, state):
         return driver
     
     except Exception as e:
-        print(f"Error: Could not process location: {city}, {state}\nError:{e}")
+        print(f"Error: Could not search location: {city}, {state}\nError:{e}")
         driver.quit()
         return None
 
@@ -202,7 +206,7 @@ def extract_listings(driver):
         sleep(random.uniform(3, 5)) 
         soup = BeautifulSoup(driver.page_source, "html.parser")
         listings_soup = soup.find("div", class_="PhotosView mlsAttributionCardHeight brokerageKeyFactsHeight reversePosition")
-        total_listings = int(soup.find("div", class_="homes summary reversePosition").get_text().split(" ")[2])
+        total_listings = int(filter_string(soup.find("div", class_="homes summary reversePosition").get_text().split(" ")[2]))
         
     except Exception as e:
        print(f"Could not scrape page: {e}")
@@ -244,7 +248,6 @@ def extract_listings(driver):
             )
             
             scroll_page(driver)
-            sleep(random.uniform(3, 5))
              
             soup = BeautifulSoup(driver.page_source, "html.parser")
             listings_soup = soup.find("div", class_="PhotosView mlsAttributionCardHeight brokerageKeyFactsHeight reversePosition")
@@ -266,7 +269,7 @@ def process_listings(listings_html):
     for listing in listings_html:
         try: 
             listing_soup = BeautifulSoup(str(listing), "html.parser")
-
+            
             data = {
                 "sqft": (extract_sqft(listing_soup)),
                 "price": (extract_price(listing_soup)),
@@ -280,8 +283,11 @@ def process_listings(listings_html):
                 "image": extract_img(listing_soup),
                 "date": str(date.today())
             }
+                
+            data["_id"] = data["URL"]
             listings_data.append(data)
             processed_count += 1
+            
         except Exception as e:
             print(f"Unexpected error has occurred: {e}")
             

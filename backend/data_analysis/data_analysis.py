@@ -1,20 +1,20 @@
 import pandas as pd
 import numpy as np
 from database.db_setup import get_database
+from datetime import date, timedelta
 
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms", "price/sqft"]
 HOUSING_DATA_DB = get_database()
-
 
 def analyze_data():
     df = initalize_df()
     king_co_averages = find_averages(df)
     city_averages = find_city_averages(df)
     correlations = find_correlations(df)
-    
-    print(king_co_averages)
-    print(city_averages)
-    print(correlations)
+    king_co_best_valued_listings = find_lowest_price_per_sqft(df)
+    best_valued_listings_per_city = find_lowest_cities_price_per_sqft(df)
+    store_data_to_DB(city_averages)
+    store_data_to_DB(best_valued_listings_per_city)
         
 def initalize_df():  
     try:
@@ -36,7 +36,7 @@ def initalize_df():
 
 def find_averages(df, group=None):
     averages = {
-        "Group": group
+        "group": group
     }
     
     for column in NUMERIC_COLUMNS:
@@ -50,7 +50,6 @@ def find_averages(df, group=None):
 
     return averages
 
-
 def find_city_averages(df):
     city_averages = []
     grouped = df.groupby("city")
@@ -58,8 +57,7 @@ def find_city_averages(df):
     for city_name, city_data in grouped:
         city_averages.append(find_averages(city_data, city_name))
     
-    return city_averages
-
+    return {"city_averages": city_averages}
 
 def find_correlations(df):
     corr_dict = df[NUMERIC_COLUMNS].corr().round(3).to_dict()
@@ -68,14 +66,39 @@ def find_correlations(df):
     matrix = [[corr_dict[row].get(col, None) for col in keys] for row in keys]
     return {"keys": keys, "matrix": matrix}
 
+def find_lowest_price_per_sqft(df, group=None):
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    weekly_df = df[df['date'].dt.date >= start_of_week]
+
+    top_5 = {
+        "group": group
+        }
+    
+    weekly_df = df.sort_values(by="price/sqft")
+    top_5["listings"] = weekly_df.head(5).to_dict(orient="records")
+    
+    return top_5
+
+def find_lowest_cities_price_per_sqft(df):
+    city_lowest = []
+    grouped = df.groupby("city")
+    
+    for city_name, city_data in grouped:
+       city_lowest.append(find_lowest_price_per_sqft(city_data, city_name))
+
+    return {"lowest_price/sqft_per_city":city_lowest}
+    
+        
 def store_data_to_DB(findings):
     try:
         king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
-        king_co_housing_findings.insert_many(findings)
+        king_co_housing_findings.insert_one(findings)
 
         print("Findings saved to DB successfully!")
         
     except Exception as e:
         print(f"Data could not be saved to DB: {e}")
         
-analyze_data()
+    
+        
