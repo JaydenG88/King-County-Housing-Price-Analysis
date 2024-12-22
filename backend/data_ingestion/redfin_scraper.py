@@ -41,7 +41,9 @@ def get_data():
             data += process_listings(listings_html)
         sleep(random.uniform(1,3))
     
-
+    store_data_to_DB(data)
+    
+def store_data_to_DB(data):
     try:
         housing_data = get_database()
         raw_king_co_listings_data = housing_data.raw_king_co_listings_data
