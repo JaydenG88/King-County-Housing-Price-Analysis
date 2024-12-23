@@ -10,15 +10,15 @@ def analyze_data():
     df = initalize_df()
     
     findings = [
-        king_co_averages := find_averages(df, "King County"),
-        city_averages := find_city_averages(df),
-        correlations := find_correlations(df),
-        king_co_best_valued_listings := find_lowest_price_per_sqft(df, "King County"),
-        best_valued_listings_per_city := find_lowest_cities_price_per_sqft(df),
-        price_frequency_per_city := find_cities_price_category_frequency(df)
+        king_co_averages := { "king_co_averages": find_averages(df, "King County") },
+        city_averages := { "city_averages":find_city_averages(df) },
+        correlations := { "correlations":find_correlations(df) },
+        king_co_best_valued_listings := {"king_co_best_valued_listings": find_lowest_price_per_sqft(df, "King County")},
+        best_valued_listings_per_city :={ "lowest_price/sqft_per_city": find_lowest_cities_price_per_sqft(df) },
+        price_frequency_per_city := { "city_price_categories": find_cities_price_category_frequency(df) }
     ]
     
-    store_data_to_DB(findings)
+    update_analysis_findings(findings)
         
 def initalize_df():  
     try:
@@ -38,9 +38,9 @@ def initalize_df():
         
     return pd.DataFrame()
 
-def find_averages(df, group=None):
+def find_averages(df, region=None):
     averages = {
-        "group": group
+        "region": region
     }
     
     for column in NUMERIC_COLUMNS:
@@ -61,21 +61,21 @@ def find_city_averages(df):
     for city_name, city_data in grouped:
         city_averages.append(find_averages(city_data, city_name))
     
-    return { "city_averages": city_averages }
+    return city_averages
 
 def find_correlations(df):
     corr_dict = df[NUMERIC_COLUMNS].corr().round(3).to_dict()
     
     keys = list(corr_dict.keys())
     matrix = [[corr_dict[row].get(col, None) for col in keys] for row in keys]
-    return {"keys": keys, "matrix": matrix}
+    return  {"keys": keys, "matrix": matrix} 
 
-def find_lowest_price_per_sqft(df, group=None):
+def find_lowest_price_per_sqft(df, region=None):
     two_weeks_ago = date.today() - timedelta(weeks=2)
     weekly_df = df[df['date'].dt.date >= two_weeks_ago]
 
     top_5 = {
-        "group": group
+        "region": region
         }
     
     weekly_df = df.sort_values(by="price/sqft")
@@ -90,7 +90,7 @@ def find_lowest_cities_price_per_sqft(df):
     for city_name, city_data in cities_df:
        city_lowest.append(find_lowest_price_per_sqft(city_data, city_name))
 
-    return { "lowest_price/sqft_per_city": city_lowest }
+    return city_lowest 
 
 def find_cities_price_category_frequency(df):
     city_price_categories = []
@@ -99,17 +99,32 @@ def find_cities_price_category_frequency(df):
         price_category_sum = city_data["price_category"].value_counts().to_dict()
         price_category_sum["city"] = city_name
         city_price_categories.append(price_category_sum)
-    return { "city_price_categories": city_price_categories }
+    return city_price_categories
+
+def update_average_trend(average):
+    return
         
-def store_data_to_DB(findings):
+def update_analysis_findings(findings):
     try:
         king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
-        king_co_housing_findings.insert_many(findings, ordered=False)
 
-        print("Findings saved to DB successfully!")
-        
+        query_keys = {
+            "king_co_averages": lambda f: {"type": "king_co_averages"},
+            "city_averages": lambda f: {"type": "city_averages"},
+            "correlations": lambda f: {"type": "correlations"},
+            "king_co_best_valued_listings": lambda f: {"type": "king_co_best_valued_listings"},
+            "lowest_price/sqft_per_city": lambda f: {"type": "lowest_price/sqft_per_city"},
+            "city_price_categories": lambda f: {"type": "city_price_categories"}
+        }
+
+        for finding in findings:
+            query = next((func(finding) for key, func in query_keys.items() if key in finding), {"type": "unknown"})
+
+            king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
+
+        print("Findings updated in DB successfully!")
+
     except Exception as e:
-        print(f"Data could not be saved to DB: {e}")
-        
+        print(f"Data could not be updated in DB: {e}")
     
         
