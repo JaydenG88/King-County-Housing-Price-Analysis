@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from database.db_setup import get_database
 from datetime import date, timedelta
 
@@ -39,29 +38,27 @@ def initalize_df():
     return pd.DataFrame()
 
 def find_averages(df, region=None):
-    averages = {
-        "region": region
-    }
-    
-    for column in NUMERIC_COLUMNS:
-        mean = df[column].mean()
-        median = df[column].median()
-        stdev = df[column].std()
-        
-        averages[f"{column}_mean"] = mean
-        averages[f"{column}_median"] = median
-        averages[f"{column}_stdev"] = stdev
+    stats = df[NUMERIC_COLUMNS].agg(["mean", "median", "std"]).transpose()
+    stats.columns = [f"{stat}" for stat in stats.columns]  
+    averages = stats.to_dict(orient="index")  
 
-    return averages
+    averages_flat = {"region": region}
+    for col, values in averages.items():
+        for stat, value in values.items():
+            averages_flat[f"{col}_{stat}"] = value
+
+    return averages_flat
 
 def find_city_averages(df):
-    city_averages = []
-    grouped = df.groupby("city")
+    city_avgs = df.groupby("city")[NUMERIC_COLUMNS].agg(["mean", "median", "std"])
+
+    city_avgs.columns = [f"{col}_{stat}" for col, stat in city_avgs.columns]
+
+    city_avgs = city_avgs.reset_index()
+    city_avgs = city_avgs.rename(columns={"city": "region"})
     
-    for city_name, city_data in grouped:
-        city_averages.append(find_averages(city_data, city_name))
-    
-    return city_averages
+    return city_avgs.to_dict(orient="records")
+
 
 def find_correlations(df):
     corr_dict = df[NUMERIC_COLUMNS].corr().round(3).to_dict()
@@ -84,43 +81,101 @@ def find_lowest_price_per_sqft(df, region=None):
     return top_5
 
 def find_lowest_cities_price_per_sqft(df):
-    city_lowest = []
-    cities_df = df.groupby("city")
     
+    lowst_cities = []
+    cities_df = df.groupby("city")
+   
     for city_name, city_data in cities_df:
-       city_lowest.append(find_lowest_price_per_sqft(city_data, city_name))
-
-    return city_lowest 
+       lowst_cities.append(find_lowest_price_per_sqft(city_data, city_name))
+       
+    return lowst_cities 
 
 def find_cities_price_category_frequency(df):
     city_price_categories = []
     cities_df = df.groupby("city")
+    
     for city_name, city_data in cities_df:
         price_category_sum = city_data["price_category"].value_counts().to_dict()
         price_category_sum["city"] = city_name
         city_price_categories.append(price_category_sum)
+        
     return city_price_categories
 
-def update_average_trend(average):
-    return
+def ensure_region_exists(region, collection):
+    query = {"_id": "price_trends", "regions.region": region}
+    if not collection.find_one(query):
+        collection.update_one(
+            {"_id": "price_trends"},
+            {"$addToSet": {"regions": {"region": region, "price_trends": []}}},
+            upsert=True,
+        )
+
+def update_average_trend(all_averages):
+    try:    
+        king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
+        today = date.today().isoformat()
+         
+        for averages in all_averages:
+            entry = {
+                "price_mean": averages["price_mean"],
+                "price_median": averages["price_median"],
+                "price/sqft_mean": averages["price/sqft_mean"],
+                "price/sqft_median": averages["price/sqft_median"],
+                "date": today
+            } 
+            
+            region = averages["region"]
+            query = {"_id": "price_trends"}   
+            
+            ensure_region_exists(region, king_co_housing_findings)
+            
+            existing_entry_query = {
+                "_id": "price_trends",
+                "regions": {
+                    "$elemMatch": {
+                        "region": region,
+                        "price_trends.date": today
+                    }
+                }
+            }
+            existing_entry = king_co_housing_findings.find_one(existing_entry_query)
+            
+            if not existing_entry:
+                update = {
+                    "$addToSet": {"regions.$[r].price_trends": entry}
+                }
+                array_filters = [{"r.region": region}]
+                
+                king_co_housing_findings.update_one(
+                    query, update, array_filters=array_filters
+                )
+            
+        print(f"Price Trends successfully updated!")
+    except Exception as e:
+        print(f"price_trends could not be updated: {e}")
+
+
         
 def update_analysis_findings(findings):
     try:
         king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
 
         query_keys = {
-            "king_co_averages": lambda f: {"type": "king_co_averages"},
-            "city_averages": lambda f: {"type": "city_averages"},
-            "correlations": lambda f: {"type": "correlations"},
-            "king_co_best_valued_listings": lambda f: {"type": "king_co_best_valued_listings"},
-            "lowest_price/sqft_per_city": lambda f: {"type": "lowest_price/sqft_per_city"},
-            "city_price_categories": lambda f: {"type": "city_price_categories"}
+            "king_co_averages": lambda f: {"_id": "king_co_averages"},
+            "city_averages": lambda f: {"_id": "city_averages"},
+            "correlations": lambda f: {"_id": "correlations"},
+            "king_co_best_valued_listings": lambda f: {"_id": "king_co_best_valued_listings"},
+            "lowest_price/sqft_per_city": lambda f: {"_id": "lowest_price/sqft_per_city"},
+            "city_price_categories": lambda f: {"_id": "city_price_categories"}
         }
 
         for finding in findings:
-            query = next((func(finding) for key, func in query_keys.items() if key in finding), {"type": "unknown"})
+            query = next((func(finding) for key, func in query_keys.items() if key in finding), {"_id": "unknown"})
 
             king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
+            
+        all_averages = [findings[0]["king_co_averages"]] + findings[1]["city_averages"]
+        update_average_trend(all_averages)
 
         print("Findings updated in DB successfully!")
 
