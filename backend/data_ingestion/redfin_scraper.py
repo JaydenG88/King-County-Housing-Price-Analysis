@@ -163,18 +163,20 @@ def scroll_page(driver, scroll_step=SCROLL_STEP):
                 
 def search_location(city, state):
     try:
+        input_selector = ELEMENT_SELECTOR["input_selector"]["selector"]
+        homecard_selector = ELEMENT_SELECTOR["homecard_selector"]["selector"]
         driver = initialize_driver()
         driver.get(TARGET_URL)
-        
+
         input_element = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CLASS_NAME, "search-input-box"))
+            EC.visibility_of_element_located((By.CLASS_NAME, input_selector))
         )
         
         sleep(random.uniform(3,5))
         input_element.send_keys(f"{city} {state}" + Keys.ENTER)
 
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "bp-Homecard"))
+            EC.presence_of_element_located((By.CLASS_NAME, homecard_selector))
         )
         print(f"Location {city}, {state} successfully searched")  
         return driver
@@ -186,11 +188,18 @@ def search_location(city, state):
 
 def extract_listings(driver):
     try: 
+        page_selector = ELEMENT_SELECTOR["page_selector"]
+        total_listings_selector = ELEMENT_SELECTOR["total_listings_selector"]
+        max_pages_selector = ELEMENT_SELECTOR["max_pages_selector"]
+        listings_selector = ELEMENT_SELECTOR["listings_selector"]
+        homecard_selector = ELEMENT_SELECTOR["homecard_selector"]["selector"]
+        button_selector = ELEMENT_SELECTOR["button_selector"]["selector"]
+
         scroll_page(driver)
         sleep(random.uniform(3, 5)) 
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        listings_soup = soup.find("div", class_="PhotosView mlsAttributionCardHeight brokerageKeyFactsHeight reversePosition")
-        total_listings = int(filter_string(soup.find("div", class_="homes summary reversePosition").get_text().split(" ")[2]))
+        listings_soup = soup.find(page_selector["elem"], class_=page_selector["selector"])
+        total_listings = int(filter_string(soup.find(total_listings_selector["elem"], class_=total_listings_selector["selector"]).get_text().split(" ")[2]))
         
     except Exception as e:
        print(f"Could not scrape page: {e}")
@@ -202,10 +211,10 @@ def extract_listings(driver):
         driver.quit()
         return []
    
-    max_pages = int(soup.find("span", attrs={"data-rf-test-name": "download-and-save-page-number-text"}).get_text(strip=True).split()[-1])
+    max_pages = int(soup.find(max_pages_selector["elem"], attrs={max_pages_selector["attrs"]: max_pages_selector["selector"]}).get_text(strip=True).split()[-1])
     if max_pages == 1:
         try:
-            listings_html = listings_soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
+            listings_html = listings_soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
             print(f"Processed page: {max_pages}")
             driver.quit()
             
@@ -218,23 +227,23 @@ def extract_listings(driver):
     listings_html = []
     for page_num in range(1, max_pages):
         try:            
-            listings_html += listings_soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
+            listings_html += listings_soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
             print(f"Processed page: {page_num}")
             
             next_page_btn = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[aria-label='next']"))
+                EC.element_to_be_clickable((By.CSS_SELECTOR, button_selector))
             )
 
             next_page_btn.click()
             
             WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "bp-Homecard"))
+                EC.presence_of_element_located((By.CLASS_NAME, homecard_selector))
             )
             
             scroll_page(driver)
              
             soup = BeautifulSoup(driver.page_source, "html.parser")
-            listings_soup = soup.find("div", class_="PhotosView mlsAttributionCardHeight brokerageKeyFactsHeight reversePosition")
+            listings_soup = soup.find(page_selector["elem"], class_=page_selector["selector"])
         except Exception as e:
             print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
             driver.quit()
