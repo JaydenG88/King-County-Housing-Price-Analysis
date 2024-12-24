@@ -10,31 +10,12 @@ from datetime import date
 from database.db_setup import get_database
 import random
 import re
-
-
-TARGET_URL = "https://www.redfin.com/"
+from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME
 
 def get_data():  
- 
-    locations = [
-        ["Algona", "WA"], ["Auburn", "WA"], ["Beaux Arts Village", "WA"],
-        ["Bellevue", "WA"], ["Black Diamond", "WA"], ["Bothell", "WA"],
-        ["Burien", "WA"], ["Carnation", "WA"], ["Clyde Hill", "WA"],
-        ["Covington", "WA"], ["Des Moines", "WA"], ["Duvall", "WA"],
-        ["Enumclaw", "WA"], ["Federal Way", "WA"], ["Hunts Point", "WA"],
-        ["Issaquah", "WA"], ["Kenmore", "WA"], ["Kent", "WA"], 
-        ["Kirkland", "WA"], ["Lake Forest Park", "WA"], ["Maple Valley", "WA"],
-        ["Medina", "WA"], ["Mercer Island", "WA"], ["Surprise Lake Milton", "WA"],
-        ["Newcastle", "WA"], ["Normandy Park", "WA"], ["North Bend", "WA"],
-        ["Pacific", "WA"], ["Redmond", "WA"], ["Renton", "WA"],
-        ["Sammamish", "WA"], ["SeaTac", "WA"], ["Seattle", "WA"],
-        ["Shoreline", "WA"], ["Skykomish", "WA"], ["Snoqualmie", "WA"],
-        ["Tukwila", "WA"], ["Woodinville", "WA"], ["Yarrow", "WA"]
-    ]
-    
     
     data = []
-    for location in locations:
+    for location in LOCATIONS:
         driver = search_location(location[0],location[1])
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
@@ -56,16 +37,7 @@ def store_data_to_DB(data):
         
 
 def initialize_driver():
-    user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
-    ]
-    user_agent = random.choice(user_agents)
+    user_agent = random.choice(USER_AGENTS)
     options = webdriver.ChromeOptions()
     options.add_argument(f"user-agent={user_agent}")
 
@@ -87,7 +59,8 @@ def filter_string(str):
 
 def extract_sqft(listing_soup):
     try:
-        sqft = listing_soup.find("span", class_="bp-Homecard__LockedStat--value").get_text(strip=True)
+        sqft_selector = ELEMENT_SELECTOR["sqft_selector"]
+        sqft = listing_soup.find(sqft_selector["elem"], class_=sqft_selector["selector"]).get_text(strip=True)
         return filter_string(sqft) if sqft else None
     except Exception as e:
         print(f"Could not retrieve sqft: {e}")
@@ -95,7 +68,8 @@ def extract_sqft(listing_soup):
 
 def extract_price(listing_soup):
     try:
-        price = listing_soup.find("span", class_="bp-Homecard__Price--value").get_text(strip=True)
+        price_selector = ELEMENT_SELECTOR["price_selector"]
+        price = listing_soup.find(price_selector["elem"], class_=price_selector["selector"]).get_text(strip=True)
         return filter_string(price) if price else None
     except Exception as e:
         print(f"Could not retrieve price: {e}")
@@ -103,7 +77,8 @@ def extract_price(listing_soup):
 
 def extract_street_address(listing_soup):
     try:
-        address = listing_soup.find("div", class_="bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact").get_text(strip=True)
+        street_address_selector = ELEMENT_SELECTOR["street_address_selector"]
+        address = listing_soup.find(street_address_selector["elem"], class_=street_address_selector["selector"]).get_text(strip=True)
         street_address = address.split(",")[0]
         return filter_string(street_address) if street_address else None
     except Exception as e:
@@ -112,7 +87,8 @@ def extract_street_address(listing_soup):
 
 def extract_city(listing_soup):
     try:
-        address = listing_soup.find("div", class_="bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact").get_text(strip=True)
+        city_selector = ELEMENT_SELECTOR["city_selector"]
+        address = listing_soup.find(city_selector["elem"], class_=city_selector["selector"]).get_text(strip=True)
         city = address.split(",")[1].strip()
         return filter_string(city) if city else None
     except Exception as e:
@@ -121,7 +97,8 @@ def extract_city(listing_soup):
 
 def extract_state(listing_soup):
     try:
-        address = listing_soup.find("div", class_="bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact").get_text(strip=True)
+        state_selector = ELEMENT_SELECTOR["state_selector"]
+        address = listing_soup.find(state_selector["elem"], class_=state_selector["selector"]).get_text(strip=True)
         state = address.split(",")[2].split(" ")[1]
         return filter_string(state) if state else None
     except Exception as e:
@@ -130,7 +107,8 @@ def extract_state(listing_soup):
 
 def extract_zip(listing_soup):
     try:
-        address = listing_soup.find("div", class_="bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact").get_text(strip=True)
+        zip_selector = ELEMENT_SELECTOR["zip_selector"]
+        address = listing_soup.find(zip_selector["elem"], class_=zip_selector["selector"]).get_text(strip=True)
         zip = address.split(",")[2].split(" ")[2]
         return filter_string(zip) if zip else None
     except Exception as e:
@@ -139,7 +117,8 @@ def extract_zip(listing_soup):
 
 def extract_beds(listing_soup):
     try:
-        beds = listing_soup.find("span", class_="bp-Homecard__Stats--beds text-nowrap").get_text(strip=True)
+        bed_selector = ELEMENT_SELECTOR["bed_selector"]
+        beds = listing_soup.find(bed_selector["elem"], class_=bed_selector["selector"]).get_text(strip=True)
         num_beds = beds.split(" ")[0]
         return filter_string(num_beds) if num_beds else None
     except Exception as e:
@@ -148,7 +127,8 @@ def extract_beds(listing_soup):
 
 def extract_baths(listing_soup):
     try:
-        baths = listing_soup.find("span", class_="bp-Homecard__Stats--beds text-nowrap").get_text(strip=True)
+        bath_selector = ELEMENT_SELECTOR["bath_selector"]
+        baths = listing_soup.find(bath_selector["elem"], class_=bath_selector["selector"]).get_text(strip=True)
         num_baths = baths.split(" ")[0]
         return filter_string(num_baths) if num_baths else None
     except Exception as e:
@@ -157,7 +137,8 @@ def extract_baths(listing_soup):
     
 def extract_url(listing_soup):
     try:
-        url = TARGET_URL + str(listing_soup.find("a", class_="link-and-anchor visuallyHidden")["href"])[1:]
+        url_selector = ELEMENT_SELECTOR["url_selector"]
+        url = TARGET_URL + str(listing_soup.find(url_selector["elem"], class_=url_selector["selector"])["href"])[1:]
         return url if url else None
     except Exception as e:
         print(f"Could not retrieve url: {e}")
@@ -165,19 +146,20 @@ def extract_url(listing_soup):
 
 def extract_img(listing_soup):
     try:
-        img = listing_soup.find("img", class_="bp-Homecard__Photo--image")["src"]
+        img_selector = ELEMENT_SELECTOR["img_selector"]
+        img = listing_soup.find(img_selector["elem"], class_=img_selector["selector"])["src"]
         return img if img else None
     except Exception as e:
         print(f"Could not retrieve image: {e}")
         return None
     
-def scroll_page(driver, scroll_step=1000):
-    max_scrolls = driver.execute_script("return document.body.scrollHeight;") * 0.75
+def scroll_page(driver, scroll_step=SCROLL_STEP):
+    max_scrolls = driver.execute_script("return document.body.scrollHeight;") * SCROLL_LIMIT
     current_position = 0
     while current_position < max_scrolls:
         driver.execute_script(f"window.scrollBy(0, {scroll_step});")
         current_position += scroll_step
-        sleep(0.25)
+        sleep(SCROLL_TIME)
                 
 def search_location(city, state):
     try:
