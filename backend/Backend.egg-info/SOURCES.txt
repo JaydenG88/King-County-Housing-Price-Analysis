@@ -6,7 +6,7 @@ backend.egg-info/top_level.txt
 data_analysis/__init__.py
 data_analysis/data_analysis.py
 data_ingestion/__init__.py
-data_ingestion/redfin_scraper.py
+data_ingestion/scraper.py
 data_ingestion/scraper_config.py
 data_processing/__init__.py
 data_processing/data_cleaning.py

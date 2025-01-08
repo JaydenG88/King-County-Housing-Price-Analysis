@@ -153,8 +153,6 @@ def update_average_trend(all_averages):
         print(f"Price Trends successfully updated!")
     except Exception as e:
         print(f"price_trends could not be updated: {e}")
-
-
         
 def update_analysis_findings(findings):
     try:

@@ -12,11 +12,11 @@ import random
 import re
 from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME
 
-def get_data():  
+def ingest_data():  
     
     data = []
     for location in LOCATIONS:
-        driver = search_location(location[0],location[1])
+        driver = search_location(location["city"],location["code"],location["state"])
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
@@ -40,7 +40,8 @@ def initialize_driver():
     user_agent = random.choice(USER_AGENTS)
     options = webdriver.ChromeOptions()
     options.add_argument(f"user-agent={user_agent}")
-
+    options.add_argument("window-size=1280,1000")
+    
     driver = webdriver.Chrome(options=options)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     stealth(driver,
@@ -161,24 +162,13 @@ def scroll_page(driver, scroll_step=SCROLL_STEP):
         current_position += scroll_step
         sleep(SCROLL_TIME)
                 
-def search_location(city, state):
+def search_location(city, code, state):
     try:
-        input_selector = ELEMENT_SELECTOR["input_selector"]["selector"]
-        homecard_selector = ELEMENT_SELECTOR["homecard_selector"]["selector"]
-        driver = initialize_driver()
-        driver.get(TARGET_URL)
-
-        input_element = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CLASS_NAME, input_selector))
-        )
+        city_url = f"{TARGET_URL}city/{code}/{state}/{city}"
         
-        sleep(random.uniform(3,5))
-        input_element.send_keys(f"{city} {state}" + Keys.ENTER)
-
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, homecard_selector))
-        )
-        print(f"Location {city}, {state} successfully searched")  
+        driver = initialize_driver()
+        driver.get(city_url)
+        print(f"Sucessfully searched: {city}, {state}")
         return driver
     
     except Exception as e:
@@ -188,17 +178,15 @@ def search_location(city, state):
 
 def extract_listings(driver):
     try: 
-        page_selector = ELEMENT_SELECTOR["page_selector"]
         total_listings_selector = ELEMENT_SELECTOR["total_listings_selector"]
         max_pages_selector = ELEMENT_SELECTOR["max_pages_selector"]
         listings_selector = ELEMENT_SELECTOR["listings_selector"]
         homecard_selector = ELEMENT_SELECTOR["homecard_selector"]["selector"]
         button_selector = ELEMENT_SELECTOR["button_selector"]["selector"]
-
+        
         scroll_page(driver)
         sleep(random.uniform(3, 5)) 
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        listings_soup = soup.find(page_selector["elem"], class_=page_selector["selector"])
         total_listings = int(filter_string(soup.find(total_listings_selector["elem"], class_=total_listings_selector["selector"]).get_text().split(" ")[2]))
         
     except Exception as e:
@@ -214,7 +202,7 @@ def extract_listings(driver):
     max_pages = int(soup.find(max_pages_selector["elem"], attrs={max_pages_selector["attrs"]: max_pages_selector["selector"]}).get_text(strip=True).split()[-1])
     if max_pages == 1:
         try:
-            listings_html = listings_soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
+            listings_html = soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
             print(f"Processed page: {max_pages}")
             driver.quit()
             
@@ -227,7 +215,7 @@ def extract_listings(driver):
     listings_html = []
     for page_num in range(1, max_pages):
         try:            
-            listings_html += listings_soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
+            listings_html += soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
             print(f"Processed page: {page_num}")
             
             next_page_btn = WebDriverWait(driver, 10).until(
@@ -243,12 +231,10 @@ def extract_listings(driver):
             scroll_page(driver)
              
             soup = BeautifulSoup(driver.page_source, "html.parser")
-            listings_soup = soup.find(page_selector["elem"], class_=page_selector["selector"])
         except Exception as e:
             print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
-            driver.quit()
     
-    listings_html += listings_soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
+    listings_html += soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
     print(f"Processed page: {max_pages}")
         
     driver.quit()
@@ -272,12 +258,12 @@ def process_listings(listings_html):
                 "street_address": extract_street_address(listing_soup),
                 "bedrooms": extract_beds(listing_soup),
                 "bathrooms": extract_baths(listing_soup),  
-                "URL": extract_url(listing_soup),
+                "URL": (URL := extract_url(listing_soup)),
                 "image": extract_img(listing_soup),
-                "date": str(date.today())
+                "date": str(date.today()),
+                "_id": URL
             }
-                
-            data["_id"] = data["URL"]
+        
             listings_data.append(data)
             processed_count += 1
             
