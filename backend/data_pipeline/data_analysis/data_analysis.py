@@ -1,15 +1,16 @@
 import pandas as pd
 from database.db_setup import get_database
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms", "price/sqft"]
-HOUSING_DATA_DB = get_database()
 
+# Main function that calls analysis functions and stores data to MongoDB
 def analyze_data():
-    df = initalize_df()
-    
+    housing_data_db = get_database()
+    df = initalize_df(housing_data_db)
+    # Stores the main findings and function calls
     findings = [
-        king_co_averages := { "king_co_averages": find_averages(df, "King County") },
+        king_co_averages := { "king_co_averages": find_king_co_averages(df)},
         city_averages := { "city_averages":find_city_averages(df) },
         correlations := { "correlations":find_correlations(df) },
         king_co_best_valued_listings := {"king_co_best_valued_listings": find_lowest_price_per_sqft(df, "King County")},
@@ -17,13 +18,13 @@ def analyze_data():
         price_frequency_per_city := { "city_price_categories": find_cities_price_category_frequency(df) }
     ]
     
-    update_analysis_findings(findings)
-        
-def initalize_df():  
+    update_analysis_findings(findings, housing_data_db)
+
+# Initializes the dataframe from cleaned data collection
+def initalize_df(database):  
     try:
-        housing_data = HOUSING_DATA_DB
         
-        cleaned_king_co_listings_data = housing_data.cleaned_king_co_listings_data
+        cleaned_king_co_listings_data = database.cleaned_king_co_listings_data
         
         cleaned_data = cleaned_king_co_listings_data.find()
         df = pd.DataFrame(list(cleaned_data))
@@ -37,28 +38,47 @@ def initalize_df():
         
     return pd.DataFrame()
 
-def find_averages(df, region=None):
-    stats = df[NUMERIC_COLUMNS].agg(["mean", "median", "std"]).transpose()
-    stats.columns = [f"{stat}" for stat in stats.columns]  
-    averages = stats.to_dict(orient="index")  
+# Finds bi-weekly averages for each numeric category for all of King County
+def find_king_co_averages(df):
+    recent_listings_df = valid_listings_date(df)
+    current_time = datetime.now().isoformat()
+    
+    # Performs averages operations using pandas aggregation method 
+    king_co_stats = recent_listings_df[NUMERIC_COLUMNS].agg(["mean", "median", "std"]).transpose()
+    king_co_stats.columns = [f"{stat}" for stat in king_co_stats.columns]  
+    averages = king_co_stats.to_dict(orient="index")  
 
-    averages_flat = {"region": region}
+    # Formats column names
+    averages_flat = {"region": "King County"}
     for col, values in averages.items():
         for stat, value in values.items():
             averages_flat[f"{col}_{stat}"] = value
-
+    
+    averages_flat["date"] = current_time
     return averages_flat
 
+# Finds bi-weekly averages for each city in King County
 def find_city_averages(df):
-    city_avgs = df.groupby("city")[NUMERIC_COLUMNS].agg(["mean", "median", "std"])
+    # Performs averages operations 
+    recent_listings_df = valid_listings_date(df)
+    city_avgs = recent_listings_df.groupby("city")[NUMERIC_COLUMNS].agg(["mean", "median", "std"])
+    current_time = datetime.now().isoformat()
 
+    # Formats column names
     city_avgs.columns = [f"{col}_{stat}" for col, stat in city_avgs.columns]
 
     city_avgs = city_avgs.reset_index()
     city_avgs = city_avgs.rename(columns={"city": "region"})
-    
+    city_avgs["date"] = current_time
     return city_avgs.to_dict(orient="records")
 
+
+def valid_listings_date(df):
+    df['date'] = pd.to_datetime(df['date'])
+    valid_date = pd.Timestamp.now() - timedelta(weeks=2)
+    recent_listings_df = df[df["date"] >= valid_date]
+    
+    return recent_listings_df
 
 def find_correlations(df):
     corr_dict = df[NUMERIC_COLUMNS].corr().round(3).to_dict()
@@ -110,9 +130,9 @@ def ensure_region_exists(region, collection):
             upsert=True,
         )
 
-def update_average_trend(all_averages):
+def update_average_trend(all_averages, housing_data_db):
     try:    
-        king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
+        king_co_housing_findings = housing_data_db.king_co_housing_findings
         today = date.today().isoformat()
          
         for averages in all_averages:
@@ -154,9 +174,9 @@ def update_average_trend(all_averages):
     except Exception as e:
         print(f"price_trends could not be updated: {e}")
         
-def update_analysis_findings(findings):
+def update_analysis_findings(findings, database):
     try:
-        king_co_housing_findings = HOUSING_DATA_DB.king_co_housing_findings
+        king_co_housing_findings = database.king_co_housing_findings
 
         query_keys = {
             "king_co_averages": lambda f: {"_id": "king_co_averages"},
@@ -173,7 +193,7 @@ def update_analysis_findings(findings):
             king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
             
         all_averages = [findings[0]["king_co_averages"]] + findings[1]["city_averages"]
-        update_average_trend(all_averages)
+        update_average_trend(all_averages, database)
 
         print("Findings updated in DB successfully!")
 

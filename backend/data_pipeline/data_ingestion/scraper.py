@@ -12,22 +12,33 @@ import random
 import re
 from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME
 
+# Main function that runs the data extraction process
+# Searches locations and extracts data using a web scraper and web driver
+# Stores data to a Mongodb database
 def ingest_data():  
-    
+    # stores the extracted and processed listings
     data = []
+    
+    # Iterates through locations to scrape and process listings
     for location in LOCATIONS:
-        driver = search_location(location["city"],location["code"],location["state"])
+        driver = search_location(location)
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
+        # Sleep to delay and not overload site requests
         sleep(random.uniform(1,3))
     
     store_data_to_DB(data)
-    
+
+# Stores array of objects/dictionaries into Mongo database
+# @param data is the data being stored into the database
 def store_data_to_DB(data):
     try:
+        # Initializes database and collection reference
         housing_data = get_database()
         raw_king_co_listings_data = housing_data.raw_king_co_listings_data
+        
+        # Drops old existing raw data (uncleaned data won't be used in analysis) and inserts new raw data
         raw_king_co_listings_data.drop()
         raw_king_co_listings_data.insert_many(data, ordered=False)
         print(f"Successfully uploaded {len(data)} documents to raw_king_co_houses_data")
@@ -35,14 +46,15 @@ def store_data_to_DB(data):
     except Exception as e:
         print(f"Data could not be stored: {e}")
         
-
+# Initializes selenium webdriver to scrape dynamically loaded pages
 def initialize_driver():
+    # Randomly rotates through user agents to avoid bot detection
     user_agent = random.choice(USER_AGENTS)
     options = webdriver.ChromeOptions()
     options.add_argument(f"user-agent={user_agent}")
     options.add_argument("window-size=1280,1000")
-    
     driver = webdriver.Chrome(options=options)
+    # Utilizing selenium stealth to further avoid bot detection
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     stealth(driver,
             languages=["en-US", "en"],
@@ -54,10 +66,15 @@ def initialize_driver():
             )
     return driver
 
+# Filters out non-alphanumeric characters and returns cleaned string
+# @param str is the string being filtered
 def filter_string(str):
     filtered_string = re.sub(r"[^a-zA-Z0-9 ]", "", str)
     return filtered_string
 
+# The extract functions finds and returns the specific element and value of the data category needed
+# Data categories are: sqft, price, street address, city, state, zip, beds, baths, url, and img
+# @param listing_soup is the beautiful soup html parser
 def extract_sqft(listing_soup):
     try:
         sqft_selector = ELEMENT_SELECTOR["sqft_selector"]
@@ -90,7 +107,9 @@ def extract_city(listing_soup):
     try:
         city_selector = ELEMENT_SELECTOR["city_selector"]
         address = listing_soup.find(city_selector["elem"], class_=city_selector["selector"]).get_text(strip=True)
-        city = address.split(",")[1].strip()
+        address_arr = address.split(",")
+
+        city = address_arr[len(address_arr)-2].strip()
         return filter_string(city) if city else None
     except Exception as e:
         print(f"Could not retrieve city: {e}")
@@ -100,7 +119,9 @@ def extract_state(listing_soup):
     try:
         state_selector = ELEMENT_SELECTOR["state_selector"]
         address = listing_soup.find(state_selector["elem"], class_=state_selector["selector"]).get_text(strip=True)
-        state = address.split(",")[2].split(" ")[1]
+        address_arr = address.split(",")
+        
+        state = address_arr[len(address_arr)-1].split(" ")[1]
         return filter_string(state) if state else None
     except Exception as e:
         print(f"Could not retrieve state: {e}")
@@ -110,7 +131,9 @@ def extract_zip(listing_soup):
     try:
         zip_selector = ELEMENT_SELECTOR["zip_selector"]
         address = listing_soup.find(zip_selector["elem"], class_=zip_selector["selector"]).get_text(strip=True)
-        zip = address.split(",")[2].split(" ")[2]
+        address_arr = address.split(",")
+        
+        zip = address_arr[len(address_arr)-1].split(" ")[2]
         return filter_string(zip) if zip else None
     except Exception as e:
         print(f"Could not retrieve zip: {e}")
@@ -153,29 +176,44 @@ def extract_img(listing_soup):
     except Exception as e:
         print(f"Could not retrieve image: {e}")
         return None
-    
-def scroll_page(driver, scroll_step=SCROLL_STEP):
-    max_scrolls = driver.execute_script("return document.body.scrollHeight;") * SCROLL_LIMIT
+
+# Makes webdriver scroll through pages to render javascript and avoiding bot detection
+# @param driver is the selenium webdriver
+# @param scroll_step is the scroll interval
+# @param scroll_limit is the percentage of the page that will be scrolled to (in decimal format, 1.0 = 100%, 0.5 = 50%) 
+def scroll_page(driver, scroll_step=SCROLL_STEP, scroll_limit=SCROLL_LIMIT):
+    max_scrolls = driver.execute_script("return document.body.scrollHeight;") * scroll_limit
     current_position = 0
+    # Scrolls until scroll limit is met
     while current_position < max_scrolls:
         driver.execute_script(f"window.scrollBy(0, {scroll_step});")
         current_position += scroll_step
         sleep(SCROLL_TIME)
-                
-def search_location(city, code, state):
+        
+# Searches specified location on redfin through the selenium webdriver and returns webdriver
+# @param location is the location being searched    
+def search_location(location):
+    location_type = location["location_type"]
+    location_name = location["location_name"]
+    code = location["code"]
+    state =location["state"]
+    
     try:
-        city_url = f"{TARGET_URL}city/{code}/{state}/{city}"
+        # Formats URL that will be searched by the webdriver
+        city_url = f"{TARGET_URL}{location_type}/{code}/{state}/{location_name}"
         
         driver = initialize_driver()
         driver.get(city_url)
-        print(f"Sucessfully searched: {city}, {state}")
+        print(f"Sucessfully searched: {location_name}, {state}")
         return driver
     
     except Exception as e:
-        print(f"Error: Could not search location: {city}, {state}\nError:{e}")
+        print(f"Error: Could not search location: {location_name}, {state}\nError:{e}")
         driver.quit()
         return None
 
+# Extracts and returns the raw HTML of each listing from each page of the searched location
+# @param driver is the webdriver containing the searched location on redfin
 def extract_listings(driver):
     try: 
         total_listings_selector = ELEMENT_SELECTOR["total_listings_selector"]
@@ -184,8 +222,10 @@ def extract_listings(driver):
         homecard_selector = ELEMENT_SELECTOR["homecard_selector"]["selector"]
         button_selector = ELEMENT_SELECTOR["button_selector"]["selector"]
         
+        # Scrolls first page and sleeps to render the first page (also helps avoids bot detection)
         scroll_page(driver)
         sleep(random.uniform(3, 5)) 
+        # Parses the html of the first page and finds total amount of listings
         soup = BeautifulSoup(driver.page_source, "html.parser")
         total_listings = int(filter_string(soup.find(total_listings_selector["elem"], class_=total_listings_selector["selector"]).get_text().split(" ")[2]))
         
@@ -194,12 +234,15 @@ def extract_listings(driver):
        driver.quit()
        return []
    
+   # Skips location and returns an empty array if there are no listings 
     if total_listings == 0:
         print("No listings found")
         driver.quit()
         return []
    
+   # Finds max pages to know if pages should be progressed through
     max_pages = int(soup.find(max_pages_selector["elem"], attrs={max_pages_selector["attrs"]: max_pages_selector["selector"]}).get_text(strip=True).split()[-1])
+    # Scrapes and returns contents of the first page if there is only one page
     if max_pages == 1:
         try:
             listings_html = soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
@@ -213,6 +256,7 @@ def extract_listings(driver):
             driver.quit()
     
     listings_html = []
+    # Iterates through each page and scrapes the HTML of each listing
     for page_num in range(1, max_pages):
         try:            
             listings_html += soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
@@ -230,18 +274,23 @@ def extract_listings(driver):
             
             scroll_page(driver)
              
+             # Scrapes the HTML of the webdriver's page
             soup = BeautifulSoup(driver.page_source, "html.parser")
         except Exception as e:
             print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
     
+    # Scrapes final page of the searched location
     listings_html += soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
     print(f"Processed page: {max_pages}")
         
     driver.quit()
     print(f"Sucessfully extracted: {len(listings_html)} listings out of {total_listings}")
     return listings_html
-        
+
+# Processes the raw HTML of each listing into usable data separated into categories
+# @param listings_html is the raw html of the housing listings     
 def process_listings(listings_html):
+    # Stores all the processed listings
     listings_data = []
     processed_count = 0
 
@@ -263,7 +312,7 @@ def process_listings(listings_html):
                 "date": str(date.today()),
                 "_id": URL
             }
-        
+
             listings_data.append(data)
             processed_count += 1
             
@@ -272,4 +321,4 @@ def process_listings(listings_html):
             
     print(f"Sucessfully processed: {processed_count} out of {len(listings_html)}")
     return listings_data
-    
+
