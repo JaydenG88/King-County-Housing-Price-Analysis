@@ -72,7 +72,7 @@ def find_city_averages(df):
     city_avgs["date"] = current_time
     return city_avgs.to_dict(orient="records")
 
-
+# Returns dataframe with recent listings dating back to 2 weeks
 def valid_listings_date(df):
     df['date'] = pd.to_datetime(df['date'])
     valid_date = pd.Timestamp.now() - timedelta(weeks=2)
@@ -80,6 +80,7 @@ def valid_listings_date(df):
     
     return recent_listings_df
 
+# Creates correlation matrix of all numeric columns
 def find_correlations(df):
     corr_dict = df[NUMERIC_COLUMNS].corr().round(3).to_dict()
     
@@ -87,6 +88,7 @@ def find_correlations(df):
     matrix = [[corr_dict[row].get(col, None) for col in keys] for row in keys]
     return  {"keys": keys, "matrix": matrix} 
 
+# Finds top 5 listings with the lowest price/sqft in King County
 def find_lowest_price_per_sqft(df, region=None):
     two_weeks_ago = date.today() - timedelta(weeks=2)
     weekly_df = df[df['date'].dt.date >= two_weeks_ago]
@@ -100,6 +102,7 @@ def find_lowest_price_per_sqft(df, region=None):
     
     return top_5
 
+# Finds top 5 listings with lowest price/sqft per city
 def find_lowest_cities_price_per_sqft(df):
     
     lowst_cities = []
@@ -110,6 +113,7 @@ def find_lowest_cities_price_per_sqft(df):
        
     return lowst_cities 
 
+# Finds price category frequency for each city
 def find_cities_price_category_frequency(df):
     city_price_categories = []
     cities_df = df.groupby("city")
@@ -121,6 +125,7 @@ def find_cities_price_category_frequency(df):
         
     return city_price_categories
 
+# Queries database to ensure location is existing
 def ensure_region_exists(region, collection):
     query = {"_id": "price_trends", "regions.region": region}
     if not collection.find_one(query):
@@ -130,11 +135,13 @@ def ensure_region_exists(region, collection):
             upsert=True,
         )
 
+# Stores and updates the historical averages for all regions
 def update_average_trend(all_averages, housing_data_db):
     try:    
         king_co_housing_findings = housing_data_db.king_co_housing_findings
         today = date.today().isoformat()
          
+        # Finds the averages for each location
         for averages in all_averages:
             entry = {
                 "price_mean": averages["price_mean"],
@@ -149,6 +156,7 @@ def update_average_trend(all_averages, housing_data_db):
             
             ensure_region_exists(region, king_co_housing_findings)
             
+            # Query for the region's average price trends
             existing_entry_query = {
                 "_id": "price_trends",
                 "regions": {
@@ -160,8 +168,9 @@ def update_average_trend(all_averages, housing_data_db):
             }
             existing_entry = king_co_housing_findings.find_one(existing_entry_query)
             
+            # Adds a new date entry for the region if today's average trends are not already stored
             if not existing_entry:
-                update = {
+                update = { 
                     "$addToSet": {"regions.$[r].price_trends": entry}
                 }
                 array_filters = [{"r.region": region}]
@@ -173,11 +182,13 @@ def update_average_trend(all_averages, housing_data_db):
         print(f"Price Trends successfully updated!")
     except Exception as e:
         print(f"price_trends could not be updated: {e}")
-        
+
+# Updates and stores all findings to the database
 def update_analysis_findings(findings, database):
     try:
         king_co_housing_findings = database.king_co_housing_findings
 
+        # Creates query keys for each document in the findings collection
         query_keys = {
             "king_co_averages": lambda f: {"_id": "king_co_averages"},
             "city_averages": lambda f: {"_id": "city_averages"},
@@ -187,11 +198,13 @@ def update_analysis_findings(findings, database):
             "city_price_categories": lambda f: {"_id": "city_price_categories"}
         }
 
+        # Updates and executes lambda functions for each finding
         for finding in findings:
             query = next((func(finding) for key, func in query_keys.items() if key in finding), {"_id": "unknown"})
 
             king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
-            
+        
+        # Updates the average trends    
         all_averages = [findings[0]["king_co_averages"]] + findings[1]["city_averages"]
         update_average_trend(all_averages, database)
 
