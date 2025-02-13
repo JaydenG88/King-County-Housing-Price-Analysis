@@ -23,7 +23,6 @@ def analyze_data():
 # Initializes the dataframe from cleaned data collection
 def initalize_df(database):  
     try:
-        
         cleaned_king_co_listings_data = database.cleaned_king_co_listings_data
         
         cleaned_data = cleaned_king_co_listings_data.find()
