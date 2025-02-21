@@ -81,7 +81,7 @@ ELEMENT_SELECTOR = {
     "zip_selector": {"elem":"div", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
     "bed_selector": {"elem":"span", "selector": "bp-Homecard__Stats--beds text-nowrap"},
     "bath_selector": {"elem":"span", "selector": "bp-Homecard__Stats--beds text-nowrap"},
-    "url_selector": {"elem":"a", "selector": "link-and-anchor visuallyHidden"},
+    "url_selector": {"elem":"a", "selector": "bp-Homecard__Photo flex justify-center align-center"},
     "img_selector": {"elem":"img", "selector": "bp-Homecard__Photo--image"}
 }
 
