@@ -3,9 +3,11 @@ import numpy as np
 from scipy.stats.mstats import winsorize
 from database.db_setup import get_database
 from pymongo.errors import PyMongoError
+from data_ingestion.scraper_config import LOCATIONS
 
 STRING_COLUMNS = ["zip", "street_address", "state", "URL", "image", "city", "date"]
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms"]
+VALID_CITIES = {loc["location_name"].lower() for loc in LOCATIONS}
 
 # The main function that cleans the raw data by running helper functions
 def clean_data():
@@ -13,6 +15,7 @@ def clean_data():
     df = initialize_df(housing_data_db.raw_king_co_listings_data)
     df = handle_missing_values(df)
     df = df.drop_duplicates()
+    df = validate_city(df)
     df = standardize_data_types(df)
     df = standardize_string_format(df)
     df = handle_outliers(df)
@@ -35,6 +38,11 @@ def initialize_df(collection):
         
     return pd.DataFrame()
 
+# Filters out non-King County cities from dataframe
+def validate_city(df):
+    filtered_df = df[df["city"].str.lower().isin(VALID_CITIES)]
+    return filtered_df
+    
 # Handles missing values by filling empty values with appropriate values
 def handle_missing_values(df):
     for cols in STRING_COLUMNS:
