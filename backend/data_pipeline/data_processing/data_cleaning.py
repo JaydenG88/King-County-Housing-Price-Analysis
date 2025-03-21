@@ -7,7 +7,9 @@ from data_ingestion.scraper_config import LOCATIONS
 
 STRING_COLUMNS = ["zip", "street_address", "state", "URL", "image", "city", "date"]
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms"]
-VALID_CITIES = {loc["location_name"].lower() for loc in LOCATIONS}
+VALID_CITIES = {loc["location_name"].lower().replace("-"," ") for loc in LOCATIONS}
+
+print(VALID_CITIES)
 
 # The main function that cleans the raw data by running helper functions
 def clean_data():

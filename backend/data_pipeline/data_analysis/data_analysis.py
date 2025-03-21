@@ -43,7 +43,7 @@ def find_king_co_averages(df):
     current_time = datetime.now().isoformat()
     
     # Performs averages operations using pandas aggregation method 
-    king_co_stats = recent_listings_df[NUMERIC_COLUMNS].agg(["mean", "median", "std"]).transpose()
+    king_co_stats = recent_listings_df[NUMERIC_COLUMNS].agg(["mean", "median"]).transpose()
     king_co_stats.columns = [f"{stat}" for stat in king_co_stats.columns]  
     averages = king_co_stats.to_dict(orient="index")  
 
