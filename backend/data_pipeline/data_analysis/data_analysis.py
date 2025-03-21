@@ -89,23 +89,23 @@ def find_correlations(df):
 
 # Finds top 5 listings with the lowest price/sqft in King County
 def find_lowest_price_per_sqft(df, region=None):
-    two_weeks_ago = date.today() - timedelta(weeks=2)
-    weekly_df = df[df['date'].dt.date >= two_weeks_ago]
+    recent_df = valid_listings_date(df)
 
     top_5 = {
         "region": region
         }
     
-    weekly_df = df.sort_values(by="price/sqft")
-    top_5["listings"] = weekly_df.head(5).to_dict(orient="records")
+    recent_df = recent_df.sort_values(by="price/sqft")
+    top_5["listings"] = recent_df.head(5).to_dict(orient="records")
     
     return top_5
 
 # Finds top 5 listings with lowest price/sqft per city
 def find_lowest_cities_price_per_sqft(df):
     
+    recent_df = valid_listings_date(df)
     lowst_cities = []
-    cities_df = df.groupby("city")
+    cities_df = recent_df.groupby("city")
    
     for city_name, city_data in cities_df:
        lowst_cities.append(find_lowest_price_per_sqft(city_data, city_name))
