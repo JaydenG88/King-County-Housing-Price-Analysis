@@ -1,0 +1,8 @@
+flask
+pandas
+numpy
+scipy
+pymongo
+selenium
+bs4
+dotenv

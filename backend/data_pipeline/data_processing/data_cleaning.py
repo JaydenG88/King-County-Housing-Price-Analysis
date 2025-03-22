@@ -9,7 +9,6 @@ STRING_COLUMNS = ["zip", "street_address", "state", "URL", "image", "city", "dat
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms"]
 VALID_CITIES = {loc["location_name"].lower().replace("-"," ") for loc in LOCATIONS}
 
-print(VALID_CITIES)
 
 # The main function that cleans the raw data by running helper functions
 def clean_data():
