@@ -22,6 +22,7 @@ def ingest_data():
     # Iterates through locations to scrape and process listings
     for location in LOCATIONS:
         driver = search_location(location)
+        sleep(50)
         listings_html = extract_listings(driver)
         if len(listings_html) >= 1:
             data += process_listings(listings_html)

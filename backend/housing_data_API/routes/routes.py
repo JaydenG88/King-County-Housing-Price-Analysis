@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services import get_city_averages, get_king_county_average, get_correlations, get_lowest_price_per_sqft, get_lowest_price_per_sqft_by_city, get_price_category_frequency, get_all_price_trends, get_price_trends_by_city
-from pymongo.errors import PyMongoError
+from housing_data_API.services.housing_services import get_city_averages, get_king_county_average, get_correlations, get_lowest_price_per_sqft, get_lowest_price_per_sqft_by_city, get_price_category_frequency, get_all_price_trends, get_price_trends_by_city
 
 housing_bp = Blueprint("housing", __name__)
 
@@ -39,8 +38,8 @@ def price_trends():
     price_trends = get_all_price_trends()
     return jsonify(price_trends), 200
 
-@housing_bp.route("/price_trends_by_city", methods=["GET"])
-def price_trends_by_city():
-    city = request.args.get("city")
+@housing_bp.route("/price_trends_by_city/<string:city>", methods=["GET"])
+def price_trends_by_city(city: str):
+    
     price_trends_by_city = get_price_trends_by_city(city)
     return jsonify(price_trends_by_city), 200
