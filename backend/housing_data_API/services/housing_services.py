@@ -34,10 +34,22 @@ def get_lowest_price_per_sqft():
         print(f"Error fetching lowest price per sqft: {e}")
         return None
     
-def get_lowest_price_per_sqft_by_city():
+def get_lowest_price_per_sqft_all_city():
     try:
         lowest_price_per_sqft_by_city = list(FINDINGS_COLLECTION.find({"_id": "lowest_price/sqft_per_city"}))
         return lowest_price_per_sqft_by_city
+    except PyMongoError as e:
+        print(f"Error fetching lowest price per sqft by city: {e}")
+        return None
+def get_lowest_price_per_sqft_by_city(city):
+    city = str(city).lower().title()
+
+    try:
+        lowest = FINDINGS_COLLECTION.find_one(
+            {"lowest_price/sqft_per_city": {"$elemMatch": {"region": city}}}
+             ,{"lowest_price/sqft_per_city.$": 1, "_id": 0}
+        )
+        return lowest.get("lowest_price/sqft_per_city") if lowest else None
     except PyMongoError as e:
         print(f"Error fetching lowest price per sqft by city: {e}")
         return None
@@ -59,7 +71,6 @@ def get_all_price_trends():
         return None
 
 def get_price_trends_by_city(city):
-    print(city)
     city = str(city).lower().title()
     
     try:

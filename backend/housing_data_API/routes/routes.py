@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from housing_data_API.services.housing_services import get_city_averages, get_king_county_average, get_correlations, get_lowest_price_per_sqft, get_lowest_price_per_sqft_by_city, get_price_category_frequency, get_all_price_trends, get_price_trends_by_city
+from housing_data_API.services.housing_services import get_city_averages, get_king_county_average, get_correlations, get_lowest_price_per_sqft, get_lowest_price_per_sqft_all_city, get_lowest_price_per_sqft_by_city, get_price_category_frequency, get_all_price_trends, get_price_trends_by_city
 
 housing_bp = Blueprint("housing", __name__)
 
@@ -23,9 +23,14 @@ def lowest_price_per_sqft():
     lowest_price_per_sqft = get_lowest_price_per_sqft()
     return jsonify(lowest_price_per_sqft), 200   
 
-@housing_bp.route("/lowest_price_per_sqft_by_city", methods=["GET"])
-def lowest_price_per_sqft_by_city():
-    lowest_price_per_sqft_by_city = get_lowest_price_per_sqft_by_city()
+@housing_bp.route("/lowest_price_per_sqft_all_city", methods=["GET"])
+def lowest_price_per_sqft_all_city():
+    lowest_price_per_sqft_by_city = get_lowest_price_per_sqft_all_city()
+    return jsonify(lowest_price_per_sqft_by_city), 200
+
+@housing_bp.route("/lowest_price_per_sqft_by_city/<string:city>", methods=["GET"])
+def lowest_price_per_sqft_by_city(city: str):
+    lowest_price_per_sqft_by_city = get_lowest_price_per_sqft_by_city(city)
     return jsonify(lowest_price_per_sqft_by_city), 200
 
 @housing_bp.route("/price_category_frequency", methods=["GET"])
