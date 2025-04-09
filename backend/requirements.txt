@@ -1,9 +1,0 @@
-flask
-pandas
-numpy
-scipy
-pymongo
-selenium
-selenium_stealth
-bs4
-dotenv
