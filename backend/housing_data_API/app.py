@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from routes.routes import housing_bp
+from housing_data_API.routes.routes import housing_bp
 
 app = Flask(__name__)
 CORS(app)
