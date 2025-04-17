@@ -10,11 +10,9 @@ def analyze_data():
     df = initalize_df(housing_data_db)
     # Stores the main findings and function calls
     findings = [
-        king_co_averages := { "king_co_averages": find_king_co_averages(df)},
-        city_averages := { "city_averages":find_city_averages(df) },
+        averages := { "averages":find_regions_averages(df) + [find_king_co_averages(df)] },
         correlations := { "correlations":find_correlations(df) },
-        king_co_best_valued_listings := {"king_co_best_valued_listings": find_lowest_price_per_sqft(df, "King County")},
-        best_valued_listings_per_city :={ "lowest_price/sqft_per_city": find_lowest_cities_price_per_sqft(df) },
+        best_valued_listings := {"best_valued_listings": (find_lowest_regions_price_per_sqft(df)) },
         price_frequency_per_city := { "city_price_categories": find_cities_price_category_frequency(df) }
     ]
     
@@ -57,7 +55,7 @@ def find_king_co_averages(df):
     return averages_flat
 
 # Finds bi-weekly averages for each city in King County
-def find_city_averages(df):
+def find_regions_averages(df):
     # Performs averages operations 
     recent_listings_df = valid_listings_date(df)
     city_avgs = recent_listings_df.groupby("city")[NUMERIC_COLUMNS].agg(["mean", "median", "std"])
@@ -73,11 +71,13 @@ def find_city_averages(df):
 
 # Returns dataframe with recent listings dating back to 2 weeks
 def valid_listings_date(df):
+    df = df.copy()  
     df['date'] = pd.to_datetime(df['date'])
     valid_date = pd.Timestamp.now() - timedelta(weeks=2)
     recent_listings_df = df[df["date"] >= valid_date]
     
     return recent_listings_df
+
 
 # Creates correlation matrix of all numeric columns
 def find_correlations(df):
@@ -87,7 +87,7 @@ def find_correlations(df):
     matrix = [[corr_dict[row].get(col, None) for col in keys] for row in keys]
     return  {"keys": keys, "matrix": matrix} 
 
-# Finds top 5 listings with the lowest price/sqft in King County
+# Helper function that finds top 5 listings with the lowest price/sqft in a region
 def find_lowest_price_per_sqft(df, region=None):
     recent_df = valid_listings_date(df)
 
@@ -100,8 +100,8 @@ def find_lowest_price_per_sqft(df, region=None):
     
     return top_5
 
-# Finds top 5 listings with lowest price/sqft per city
-def find_lowest_cities_price_per_sqft(df):
+# Finds top 5 listings with lowest price/sqft for all regions
+def find_lowest_regions_price_per_sqft(df):
     
     recent_df = valid_listings_date(df)
     lowst_cities = []
@@ -109,6 +109,7 @@ def find_lowest_cities_price_per_sqft(df):
    
     for city_name, city_data in cities_df:
        lowst_cities.append(find_lowest_price_per_sqft(city_data, city_name))
+    lowst_cities.append(find_lowest_price_per_sqft(recent_df, "King County"))
        
     return lowst_cities 
 
@@ -189,11 +190,9 @@ def update_analysis_findings(findings, database):
 
         # Creates query keys for each document in the findings collection
         query_keys = {
-            "king_co_averages": lambda f: {"_id": "king_co_averages"},
-            "city_averages": lambda f: {"_id": "city_averages"},
+            "averages": lambda f: {"_id": "averages"},
             "correlations": lambda f: {"_id": "correlations"},
-            "king_co_best_valued_listings": lambda f: {"_id": "king_co_best_valued_listings"},
-            "lowest_price/sqft_per_city": lambda f: {"_id": "lowest_price/sqft_per_city"},
+            "best_valued_listings": lambda f: {"_id": "best_valued_listings"},
             "city_price_categories": lambda f: {"_id": "city_price_categories"}
         }
 
@@ -204,8 +203,7 @@ def update_analysis_findings(findings, database):
             king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
         
         # Updates the average trends    
-        all_averages = [findings[0]["king_co_averages"]] + findings[1]["city_averages"]
-        update_average_trend(all_averages, database)
+        update_average_trend(findings[0]["averages"], database)
 
         print("Findings updated in DB successfully!")
 

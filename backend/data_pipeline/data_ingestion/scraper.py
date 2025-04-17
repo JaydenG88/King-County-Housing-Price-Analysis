@@ -23,6 +23,7 @@ def ingest_data():
     for location in LOCATIONS:
         driver = search_location(location)
         listings_html = extract_listings(driver)
+        
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
         # Sleep to delay and not overload site requests
@@ -246,6 +247,7 @@ def extract_listings(driver):
     if max_pages == 1:
         try:
             listings_html = soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
+
             print(f"Processed page: {max_pages}")
             driver.quit()
             

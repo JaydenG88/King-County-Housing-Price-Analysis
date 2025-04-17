@@ -70,7 +70,7 @@ USER_AGENTS = [
 ELEMENT_SELECTOR = {
     "homecard_selector": {"selector": "bp-Homecard"},
     "total_listings_selector": {"elem": "div", "selector": "homes summary reversePosition"},
-    "listings_selector": {"elem":"div", "selector": "MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts"},
+    "listings_selector": {"elem":"div", "selector": "MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts widerHomecardsContainer"},
     "max_pages_selector": {"elem": "span", "attrs": "data-rf-test-name", "selector": "download-and-save-page-number-text"},
     "button_selector": {"selector": "button[aria-label='next']"},
     "sqft_selector": {"elem":"span", "selector": "bp-Homecard__LockedStat--value"},
