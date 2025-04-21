@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from housing_data_API.services.housing_services import get_averages, get_correlations, get_lowest_price_per_sqft, get_price_category_frequency, get_all_price_trends
+from housing_data_API.services.housing_services import get_averages, get_correlations, get_lowest_price_per_sqft, get_price_category_frequency
 
 housing_bp = Blueprint("housing", __name__)
 
@@ -13,9 +13,9 @@ def correlations():
     correlations = get_correlations()
     return jsonify(correlations), 200
 
-@housing_bp.route("/lowest_price_per_sqft", methods=["GET"])
-def lowest_price_per_sqft():
-    lowest_price_per_sqft = get_lowest_price_per_sqft()
+@housing_bp.route("/lowest_price_per_sqft/<string:region>", methods=["GET"])
+def lowest_price_per_sqft(region):
+    lowest_price_per_sqft = get_lowest_price_per_sqft(region)
     return jsonify(lowest_price_per_sqft), 200   
 
 @housing_bp.route("/price_category_frequency", methods=["GET"])
