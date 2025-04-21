@@ -54,7 +54,9 @@ def get_price_category_frequency(region):
         print(f"Error fetching price category frequency: {e}")
         return None
 
-def get_price_trends_by_city(region):
+def get_price_trends(region, metric, type):
+    metric = str(metric).lower()
+    type = str(type).lower()
     region = str(region).lower().title()
     
     try:
@@ -64,9 +66,20 @@ def get_price_trends_by_city(region):
         )
         
         region = regions.get("regions")[0] if regions else None
-        return region
-    
-    except PyMongoError as e:
-        print(f"Error fetching price trends by region: {e}")
+        if not region:
+            return None
+        
+        return [
+            {
+                "date": entry["date"],
+                "value": entry.get(f"{metric}_{type}")
+            }
+            for entry in region.get("price_trends", [])
+            if f"{metric}_{type}" in entry
+        ] if region else None
+        
+    except PyMongoError as e:       
+        print(f"Error fetching price trends: {e}")
         return None
+        
 
