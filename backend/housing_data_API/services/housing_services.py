@@ -3,17 +3,18 @@ from pymongo.errors import PyMongoError
 
 FINDINGS_COLLECTION = get_database().king_co_housing_findings
 
-def get_king_county_average():    
+def get_averages(metric, type):
     try:
-        king_county_average = list(FINDINGS_COLLECTION.find_one({"_id": "king_county_average"})) 
-        return king_county_average
-    except PyMongoError as e:
-        print(f"Error fetching king county average: {e}")
-
-def get_city_averages():
-    try:
-        city_averages = list(FINDINGS_COLLECTION.find({"_id": "city_averages"}))
-        return city_averages
+        city_averages = list(FINDINGS_COLLECTION.find({"_id": "averages"}))
+        print(f"TEST:{city_averages}")
+        key = f"{metric}_{type}"
+        
+        return [
+            {"region": entry["region"], "value": entry.get(key)}
+            for entry in city_averages[0].get("averages", [])
+            if key in entry
+        ]
+        
     except PyMongoError as e:
         print(f"Error fetching city averages: {e}")
         return None
@@ -41,6 +42,7 @@ def get_lowest_price_per_sqft_all_city():
     except PyMongoError as e:
         print(f"Error fetching lowest price per sqft by city: {e}")
         return None
+    
 def get_lowest_price_per_sqft_by_city(city):
     city = str(city).lower().title()
 

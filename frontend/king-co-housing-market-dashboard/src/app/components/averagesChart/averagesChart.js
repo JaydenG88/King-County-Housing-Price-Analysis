@@ -2,7 +2,6 @@ import { useState, useEffect, use } from "react";
 
 export default function AveragesChart() {
     const [averages, setAverages] = useState([]);
-    const [region, setRegion] = useState("Seattle")
     const [type, setType] = useState("mean");
     const [metric, setMetric] = useState("price");
 
