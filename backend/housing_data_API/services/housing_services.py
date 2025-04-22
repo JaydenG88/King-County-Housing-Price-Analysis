@@ -48,7 +48,6 @@ def get_price_category_frequency(region):
     try:
         city_price_categories = FINDINGS_COLLECTION.find_one({"city_price_categories" : {"$elemMatch": {"city": region}}}, {"city_price_categories.$": 1, "_id": 0})
         get_price_category_frequency = city_price_categories.get("city_price_categories") if city_price_categories else None
-        print(f"TEST:{city_price_categories}")
         return get_price_category_frequency
     
     except PyMongoError as e:
