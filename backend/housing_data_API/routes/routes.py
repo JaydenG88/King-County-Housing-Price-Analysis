@@ -18,9 +18,9 @@ def lowest_price_per_sqft(region):
     lowest_price_per_sqft = get_lowest_price_per_sqft(region)
     return jsonify(lowest_price_per_sqft), 200   
 
-@housing_bp.route("/price_category_frequency", methods=["GET"])
-def price_category_frequency():
-    price_category_frequency = get_price_category_frequency()
+@housing_bp.route("/price_category_frequency/<string:region>", methods=["GET"])
+def price_category_frequency(region):
+    price_category_frequency = get_price_category_frequency(region)
     return jsonify(price_category_frequency), 200
 
 @housing_bp.route("/price_trends/<string:region>/<string:metric>/<string:type>", methods=["GET"])

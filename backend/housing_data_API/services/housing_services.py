@@ -9,7 +9,6 @@ def get_averages(metric, type):
     
     try:
         city_averages = list(FINDINGS_COLLECTION.find({"_id": "averages"}))
-        print(f"TEST:{city_averages}")
         key = f"{metric}_{type}"
         
         return [
@@ -45,11 +44,13 @@ def get_lowest_price_per_sqft(region):
         return None
 
 def get_price_category_frequency(region):
+    region = region.lower().title()
     try:
-        price_category_frequency = list(FINDINGS_COLLECTION.find({"price_category_frequency" : {"$elemMatch": {"region": region}}}
-             ,{"price_category_frequency.$": 1, "_id": 0}
-        ))
-        return price_category_frequency
+        city_price_categories = FINDINGS_COLLECTION.find_one({"city_price_categories" : {"$elemMatch": {"city": region}}}, {"city_price_categories.$": 1, "_id": 0})
+        get_price_category_frequency = city_price_categories.get("city_price_categories") if city_price_categories else None
+        print(f"TEST:{city_price_categories}")
+        return get_price_category_frequency
+    
     except PyMongoError as e:
         print(f"Error fetching price category frequency: {e}")
         return None
