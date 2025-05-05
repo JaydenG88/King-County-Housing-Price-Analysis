@@ -1,4 +1,6 @@
 import { useState, useEffect, use } from "react";
+import axios from "axios";
+import { BarChart, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function AveragesChart() {
     const [averages, setAverages] = useState([]);
@@ -6,17 +8,14 @@ export default function AveragesChart() {
     const [metric, setMetric] = useState("price");
 
     useEffect(() => {
-        const fetchData = async () => {
-            const response = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/city_averages`);
-            const data = await response.json();
-            setAverages(data);
-        };
-        fetchData();
-    }
-    , [region, type, metric]);
+        axios.get(`https://king-county-housing-price-analysis.onrender.com/api/averages/${type}/${metric}`)
+        .then((res) => (setAverages(res.data))
+        .catch((err) => console.log(err)))}
+    , [type, metric]);
+
     return (
         <main>
 
         </main>
     )
-}
+} 
