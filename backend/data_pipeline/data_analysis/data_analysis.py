@@ -69,11 +69,11 @@ def find_regions_averages(df):
     city_avgs["date"] = current_time
     return city_avgs.to_dict(orient="records")
 
-# Returns dataframe with recent listings dating back to 2 weeks
+# Returns dataframe with recent listings dating back to 4 weeks
 def valid_listings_date(df):
     df = df.copy()  
     df['date'] = pd.to_datetime(df['date'])
-    valid_date = pd.Timestamp.now() - timedelta(weeks=2)
+    valid_date = pd.Timestamp.now() - timedelta(weeks=4)
     recent_listings_df = df[df["date"] >= valid_date]
     
     return recent_listings_df
