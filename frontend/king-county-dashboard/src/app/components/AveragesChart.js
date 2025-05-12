@@ -49,7 +49,7 @@ export default function AveragesChart() {
   <div style={{ marginBottom: '1rem' }}>
     <label style={{ marginRight: '1rem' }}>
       Type:
-      <select value={type} onChange={(e) => setType(e.target.value)} style={{ marginLeft: '0.5rem' }}>
+      <select value={type} onChange={(e) => setType(e.target.value)} style={{ marginLeft: '0.5rem', color: 'black', backgroundColor: 'white' }}>
         <option value="mean">Mean</option>
         <option value="median">Median</option>
       </select>
@@ -57,10 +57,10 @@ export default function AveragesChart() {
 
     <label>
       Metric:
-      <select value={metric} onChange={(e) => setMetric(e.target.value)} style={{ marginLeft: '0.5rem' }}>
+      <select value={metric} onChange={(e) => setMetric(e.target.value)} style={{ marginLeft: '0.5rem', color: 'black', backgroundColor: 'white' }}>
         <option value="price">Price</option>
         <option value="sqft">Square Feet</option>
-        <option value="price/sqft">Price per Sqft</option>
+        <option value="price_per_sqft">Price per Sqft</option>
       </select>
     </label>
   </div>
