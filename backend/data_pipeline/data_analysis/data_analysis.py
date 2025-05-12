@@ -2,7 +2,7 @@ import pandas as pd
 from database.db_setup import get_database
 from datetime import date, timedelta, datetime
 
-NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms", "price/sqft"]
+NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms", "price_per_sqft"]
 
 # Main function that calls analysis functions and stores data to MongoDB
 def analyze_data():
@@ -95,7 +95,7 @@ def find_lowest_price_per_sqft(df, region=None):
         "region": region
         }
     
-    recent_df = recent_df.sort_values(by="price/sqft")
+    recent_df = recent_df.sort_values(by="price_per_sqft")
     top_5["listings"] = recent_df.head(5).to_dict(orient="records")
     
     return top_5
@@ -146,8 +146,8 @@ def update_average_trend(all_averages, housing_data_db):
             entry = {
                 "price_mean": averages["price_mean"],
                 "price_median": averages["price_median"],
-                "price/sqft_mean": averages["price_per_sqft_mean"],
-                "price/sqft_median": averages["price_per_sqft_median"],
+                "price_per_sqft_mean": averages["price_per_sqft_mean"],
+                "price_per_sqft_median": averages["price_per_sqft_median"],
                 "date": today
             } 
             

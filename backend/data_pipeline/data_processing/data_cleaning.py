@@ -89,7 +89,7 @@ def handle_outliers(df):
 
 # Adds price_per_sqft column to df
 def get_price_per_sqft(df):
-    df["price/sqft"] = df["price"] / df["sqft"]
+    df["price_per_sqft"] = df["price"] / df["sqft"]
     return df
 
 # Adds price categorizations from low-high based on quantiles of overall king county
