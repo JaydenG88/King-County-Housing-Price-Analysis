@@ -146,8 +146,8 @@ def update_average_trend(all_averages, housing_data_db):
             entry = {
                 "price_mean": averages["price_mean"],
                 "price_median": averages["price_median"],
-                "price/sqft_mean": averages["price/sqft_mean"],
-                "price/sqft_median": averages["price/sqft_median"],
+                "price/sqft_mean": averages["price_per_sqft_mean"],
+                "price/sqft_median": averages["price_per_sqft_median"],
                 "date": today
             } 
             

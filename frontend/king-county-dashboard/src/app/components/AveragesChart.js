@@ -41,8 +41,30 @@ export default function AveragesChart() {
     console.log(averages);
 
     return (
+
+      
    
 <div style={{ width: '100%', height: 650 }}>
+
+  <div style={{ marginBottom: '1rem' }}>
+    <label style={{ marginRight: '1rem' }}>
+      Type:
+      <select value={type} onChange={(e) => setType(e.target.value)} style={{ marginLeft: '0.5rem' }}>
+        <option value="mean">Mean</option>
+        <option value="median">Median</option>
+      </select>
+    </label>
+
+    <label>
+      Metric:
+      <select value={metric} onChange={(e) => setMetric(e.target.value)} style={{ marginLeft: '0.5rem' }}>
+        <option value="price">Price</option>
+        <option value="sqft">Square Feet</option>
+        <option value="price/sqft">Price per Sqft</option>
+      </select>
+    </label>
+  </div>
+
   <ResponsiveContainer width="100%" height="100%">
     <BarChart
       data={averages}
