@@ -228,8 +228,8 @@ def extract_listings(driver):
         sleep(random.uniform(3, 5)) 
         # Parses the html of the first page and finds total amount of listings
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        total_listings = int(filter_string(soup.find(total_listings_selector["elem"], class_=total_listings_selector["selector"]).get_text().split(" ")[2]))
-        
+        total_listings = int(filter_string(soup.find(total_listings_selector["elem"], class_=total_listings_selector["selector"]).get_text().split(" ")[0]))
+
     except Exception as e:
        print(f"Could not scrape page: {e}")
        driver.quit()
