@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Bar } from "recharts";
+import DropDown from "./DropDown";
 
 export default function AveragesChart() {
     const [averages, setAverages] = useState([]);
@@ -51,30 +52,28 @@ export default function AveragesChart() {
       <div className="bg-white shadow-lg rounded-lg p-1 w-full md:w-3/4 lg:w-5/6 ml-auto">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Averages by Region</h2>
         <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
-        <label className="flex items-center text-gray-700">
-          <span className="mr-2">Type:</span>
-          <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          <option value="mean">Mean</option>
-          <option value="median">Median</option>
-          </select>
-        </label>
 
-        <label className="flex items-center text-gray-700">
-          <span className="mr-2">Metric:</span>
-          <select
-          value={metric}
-          onChange={(e) => setMetric(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          <option value="price">Price</option>
-          <option value="sqft">Square Feet</option>
-          <option value="price_per_sqft">Price per Sqft</option>
-          </select>
-        </label>
+        <DropDown
+        label="Metric"
+        value={metric}
+        onChange={setMetric}
+        options={[
+          { label: "Price", value: "price" },
+          { label: "Price per Square Foot", value: "price_per_sqft" },
+          { label: "Square Footage", value: "sqft" }
+        ]}
+        
+        />
+        <DropDown
+          label="Type"
+          value={type}
+          onChange={setType}
+          options={[
+            { label: "Mean", value: "mean" },
+            { label: "Median", value: "median" }
+          ]}
+        />
+        
         </div>
 
         <div className="w-full" style={{ height: `${averages.length * 20}px`, maxHeight: "700px", width: "100%" }}>
