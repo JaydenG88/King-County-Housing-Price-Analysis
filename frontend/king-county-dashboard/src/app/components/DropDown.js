@@ -1,9 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 export default function DropDown({ label, options, value, onChange}) {
-
     return (
         <label className="flex items-center text-gray-700">
             <span className="mr-2">{label}:</span>

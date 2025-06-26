@@ -38,8 +38,9 @@ export default function AveragesChart() {
         }
 
     fetchData();
-
     },[type, metric]);
+
+    console.log(averages)
 
     if (loading) {
         return <div>Loading...</div>;
