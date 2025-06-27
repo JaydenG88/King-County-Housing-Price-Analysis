@@ -6,6 +6,7 @@ import DropDown from "./DropDown";
 
 export default function OverTimeChart() {
     const [data, setData] = useState([]);
+    const [regions, setRegions] = useState([]);
     const [metric, setMetric] = useState("price");
     const[type, setType] = useState("mean");
     const [region, setRegion] = useState("King County");
@@ -15,12 +16,14 @@ export default function OverTimeChart() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/price_trends/${region}/${metric}/${type}`)
-                if (!res.ok) {
+                const dataRes = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/price_trends/${region}/${metric}/${type}`)
+
+                if (!dataRes.ok) {
                     throw new Error("Network response was not ok" + res.statusText);
                 }
-                let data = await res.json();
 
+                let data = await dataRes.json();
+                
                 data = data.map(item => {
                     return {
                       date: item.date,
@@ -29,7 +32,6 @@ export default function OverTimeChart() {
                 })
 
                 setData(data);
-
             } catch (error) {
                 setError(error);
             }
@@ -37,6 +39,20 @@ export default function OverTimeChart() {
                 setLoading(false);
             }
         }
+
+        async function fetchRegions() {
+            try {
+                const res = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/regions`)
+                if (!res.ok) {
+                    throw new Error("Network response was not ok" + res.statusText);
+                }
+                const regionsData = await res.json();
+                setRegions(regionsData);
+            } catch (error) {
+                setError(error);
+            }
+        }
+        fetchRegions();
         fetchData();
     },[type, metric, region]);
 
@@ -60,7 +76,6 @@ export default function OverTimeChart() {
                     { label: "Price per Square Foot", value: "price_per_sqft" },
                 ]}
                 />
-
                 <DropDown
                     label="Type"
                     value={type}
@@ -70,20 +85,12 @@ export default function OverTimeChart() {
                     { label: "Median", value: "median" }
                     ]}
                 />
-
                 <DropDown
                     label="Region"
                     value={region}
                     onChange={setRegion}
-                    options={[
-                    { label: "Mean", value: "mean" },
-                    { label: "Median", value: "median" }
-                    ]}
-                />
-                
-                        
-
-
+                    options={ regions.map(r => ({ label: r, value: r }))}
+                /> 
             </div>
 
              <div className="w-full" style={{ height: `700px`, maxHeight: "700px", width: "100%" }}>
