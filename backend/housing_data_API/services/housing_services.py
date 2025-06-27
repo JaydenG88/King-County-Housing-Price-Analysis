@@ -23,13 +23,19 @@ def get_averages(metric, type):
         
 def get_correlations():
     try:
-        correlations = list(FINDINGS_COLLECTION.find({"_id": "correlations"}))
+        correlations_doc = list(FINDINGS_COLLECTION.find({"_id": "correlations"}))
+        keys = correlations_doc[0]["correlations"]["keys"]
+        matrix = correlations_doc[0]["correlations"]["matrix"]
+        
+        correlations = {
+            "keys": keys,
+            "matrix": matrix
+        }
         return correlations
     except PyMongoError as e:
         print(f"Error fetching correlations: {e}")
         return None
-    
-    
+
 def get_lowest_price_per_sqft(region):
     region = str(region).lower().title()
 

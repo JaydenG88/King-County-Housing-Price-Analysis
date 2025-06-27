@@ -5,6 +5,7 @@ export default function HomePage() {
     <main style={{ padding: '2rem' }}>
       <h1>King County Housing Dashboard</h1>
       <OverTimeChart metric="price" type="mean" region="King County" />
+      <AveragesChart metric="price" type="mean" region="King County"/>
     </main>
   )
 }
