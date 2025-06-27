@@ -51,7 +51,39 @@ export default function OverTimeChart() {
         <div className="bg-white shadow-lg rounded-lg p-1 w-full md:w-3/4 lg:w-5/6 ml-auto">
             <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Average Cost Over Time</h2>
             <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
-            
+                <DropDown
+                label="Metric"
+                value={metric}
+                onChange={setMetric}
+                options={[
+                    { label: "Price", value: "price" },
+                    { label: "Price per Square Foot", value: "price_per_sqft" },
+                ]}
+                />
+
+                <DropDown
+                    label="Type"
+                    value={type}
+                    onChange={setType}
+                    options={[
+                    { label: "Mean", value: "mean" },
+                    { label: "Median", value: "median" }
+                    ]}
+                />
+
+                <DropDown
+                    label="Region"
+                    value={region}
+                    onChange={setRegion}
+                    options={[
+                    { label: "Mean", value: "mean" },
+                    { label: "Median", value: "median" }
+                    ]}
+                />
+                
+                        
+
+
             </div>
 
              <div className="w-full" style={{ height: `700px`, maxHeight: "700px", width: "100%" }}>
