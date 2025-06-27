@@ -85,4 +85,17 @@ def get_price_trends(region, metric, type):
         print(f"Error fetching price trends: {e}")
         return None
         
+def get_regions():
+    try:
+        regions = list(FINDINGS_COLLECTION.distinct("regions.region"))
+        
+        if "King County" in regions:
+            regions.remove("King County")
+            regions.insert(0, "King County")
+            
+        return regions
+        
+    except PyMongoError as e:
+        print(f"Error fetching regions: {e}")
+        return None
 

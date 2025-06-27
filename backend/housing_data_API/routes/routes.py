@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from housing_data_API.services.housing_services import get_averages, get_correlations, get_lowest_price_per_sqft, get_price_category_frequency, get_price_trends
+from housing_data_API.services.housing_services import get_averages, get_correlations, get_lowest_price_per_sqft, get_price_category_frequency, get_price_trends, get_regions
 
 housing_bp = Blueprint("housing", __name__)
 
@@ -27,3 +27,8 @@ def price_category_frequency(region):
 def price_trends(region, metric, type):
     price_trends = get_price_trends(region, metric, type)
     return jsonify(price_trends), 200
+
+@housing_bp.route("/regions", methods=["GET"])
+def regions():
+    regions = get_regions()
+    return jsonify(regions), 200
