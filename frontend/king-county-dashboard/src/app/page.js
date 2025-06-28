@@ -11,7 +11,7 @@ export default function HomePage() {
       <OverTimeChart metric="price" type="mean" region="King County" />
       <AveragesChart metric="price" type="mean" region="King County"/>
       <CorrelationHeatMap />
-      <PriceCategoryChart region="algona"/>
+      <PriceCategoryChart />
       <BestValueCard  
         sqft={1500}
         price={500000}

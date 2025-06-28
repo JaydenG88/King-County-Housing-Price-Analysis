@@ -6,7 +6,7 @@ import DropDown from "./DropDown";
 
 export default function PriceCategoryChart() {
     const [data, setData] = useState([]);
-    const [region, setRegion] = useState("all");
+    const [region, setRegion] = useState("Seattle");
     const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,7 +18,6 @@ export default function PriceCategoryChart() {
                     throw new Error("Network response was not ok" + res.statusText);
                 }
                 let data = await res.json();
-                
                 setData(data);
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -50,7 +49,12 @@ export default function PriceCategoryChart() {
     if (loading) {
         return <div>Loading...</div>;
     }
-    console.log(data);
+
+    const order = ["low", "medium_low", "medium_high", "high"];
+    const chartData = data.sort((a, b) => {
+    return order.indexOf(a.category) - order.indexOf(b.category);
+    });
+
     return (
         <div className="bg-white shadow-lg rounded-lg p-1 w-full md:w-3/4 lg:w-5/6 ml-auto">
             <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency</h2>
@@ -63,8 +67,8 @@ export default function PriceCategoryChart() {
                 /> 
 
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={700}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="category" />
                 <YAxis />
                 <Tooltip />
