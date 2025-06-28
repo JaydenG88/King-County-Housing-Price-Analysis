@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 
 export default function BestValueCard({ sqft, price, zip, city, state, street_address, bedrooms, bathrooms, url, image, price_per_sqft, price_category }) {
 
