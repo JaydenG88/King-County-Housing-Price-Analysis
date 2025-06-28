@@ -56,8 +56,9 @@ def get_price_category_frequency(region):
             "city_price_categories" : {"$elemMatch": {"city": region}}},
             {"city_price_categories.$": 1, "_id": 0})
         
-        get_price_category_frequency = city_price_categories.get("city_price_categories")[0] if city_price_categories else None
-        return get_price_category_frequency
+        category_frequency = city_price_categories.get("city_price_categories")[0] if city_price_categories else None
+        formatted = [{"category": k, "value": v} for k, v in category_frequency.items() if k != "city"]
+        return formatted
     
     except PyMongoError as e:
         print(f"Error fetching price category frequency: {e}")
