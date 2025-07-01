@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Bar } from "recharts";
-import DropDown from "./DropDown";
+import DropDown from "../UI/DropDown";
 
-export default function PriceCategoryChart() {
+export default function PriceCategoryChart({ compact = false }) {
     const [data, setData] = useState([]);
     const [region, setRegion] = useState("Seattle");
     const [regions, setRegions] = useState([]);
@@ -55,9 +55,14 @@ export default function PriceCategoryChart() {
     return order.indexOf(a.category) - order.indexOf(b.category);
     });
 
+    const chartHeight = (compact ? 300 : 700);
+
+
     return (
-        <div className="bg-white shadow-lg rounded-lg p-1 w-full md:w-3/4 lg:w-5/6 ml-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency</h2>
+      <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 ml-auto"}`}>
+            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency: {region}</h2>
+        
+        {!compact && (
             <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
             <DropDown
                 label="Region"
@@ -65,9 +70,9 @@ export default function PriceCategoryChart() {
                 onChange={setRegion}
                 options={ regions.map(r => ({ label: r, value: r }))}
                 /> 
-
             </div>
-            <ResponsiveContainer width="100%" height={700}>
+        )}
+            <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="category" />
                 <YAxis />

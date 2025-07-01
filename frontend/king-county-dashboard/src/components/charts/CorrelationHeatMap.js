@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
 
-export default function CorrelationHeatMap() {
+export default function CorrelationHeatMap({ compact = false }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -36,8 +36,10 @@ export default function CorrelationHeatMap() {
         return <div>Error: {error.message}</div>;
     }
 
+    const chartHeight = (compact ? 300 : 700);
+
     return (
-        <div className="bg-white shadow-lg rounded-lg p-1 w-full md:w-3/4 lg:w-5/6 ml-auto">
+      <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 ml-auto"}`}>
             <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Correlation Heat Map</h2>
             <ReactApexChart
             options={{
@@ -61,7 +63,7 @@ export default function CorrelationHeatMap() {
                 }))
             }))}
             type="heatmap"
-            height={700}
+            height={chartHeight}
             />
         </div>
     )

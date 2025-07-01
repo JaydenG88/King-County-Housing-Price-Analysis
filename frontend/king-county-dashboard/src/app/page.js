@@ -1,17 +1,17 @@
-import AveragesChart from "./components/AveragesChart"
-import OverTimeChart from "./components/OverTimeChart"
-import CorrelationHeatMap from "./components/CorrelationHeatMap"
-import BestValueCard from "./components/BestValueCard"
-import PriceCategoryChart from "./components/PriceCategoryChart"
+import AveragesChart from "../components/charts/AveragesChart"
+import OverTimeChart from "../components/charts/OverTimeChart"
+import CorrelationHeatMap from "../components/charts/CorrelationHeatMap"
+import BestValueCard from "../components/cards/BestValueCard"
+import PriceCategoryChart from "../components/charts/PriceCategoryChart"
 
 export default function HomePage() {
   return (
     <main style={{ padding: '2rem' }}>
       <h1>King County Housing Dashboard</h1>
-      <OverTimeChart metric="price" type="mean" region="King County" />
-      <AveragesChart metric="price" type="mean" region="King County"/>
-      <CorrelationHeatMap />
-      <PriceCategoryChart />
+      <OverTimeChart compact={true} />
+      <AveragesChart compact={true}/>
+      <CorrelationHeatMap compact={true}/>
+      <PriceCategoryChart compact={true}/>
       <BestValueCard  
         sqft={1500}
         price={500000}
