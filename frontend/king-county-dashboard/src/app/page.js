@@ -1,32 +1,48 @@
 import AveragesChart from "../components/charts/AveragesChart"
 import OverTimeChart from "../components/charts/OverTimeChart"
 import CorrelationHeatMap from "../components/charts/CorrelationHeatMap"
-import BestValueCard from "../components/cards/BestValueCard"
 import PriceCategoryChart from "../components/charts/PriceCategoryChart"
+import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>King County Housing Dashboard</h1>
-      <OverTimeChart compact={true} />
-      <AveragesChart compact={true}/>
-      <CorrelationHeatMap compact={true}/>
-      <PriceCategoryChart compact={true}/>
-      <BestValueCard  
-        sqft={1500}
-        price={500000}
-        zip="98001"
-        city="Seattle"
-        state="WA"
-        street_address="123 Main St"
-        bedrooms={3}
-        bathrooms={2}
-        url="https://example.com/listing/123"
-        image="https://ssl.cdn-redfin.com/photo/1/islphoto/754/genIslnoResize.2381754_0.jpg"
-        price_per_sqft={333.33}
-        price_category="Low"
-      
-      />
-    </main>
+    <div className="p-4 bg-gray-100 min-h-screen">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-4">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">King County Housing Price Analysis Overview</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Averages Chart */}
+          <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <AveragesChart compact />
+            <Link href="/averages" passHref legacyBehavior>
+              <a className="absolute inset-0 z-10" aria-label="Go to Averages Page" />
+            </Link>
+          </div>
+
+          {/* Over Time Chart */}
+          <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <OverTimeChart compact />
+            <Link href="/priceTrends" passHref legacyBehavior>
+              <a className="absolute inset-0 z-10" aria-label="Go to Over Time Page" />
+            </Link>
+          </div>
+
+          {/* Correlation Heat Map */}
+          <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <CorrelationHeatMap compact />
+            <Link href="/correlations" passHref legacyBehavior>
+              <a className="absolute inset-0 z-10" aria-label="Go to Correlations Page" />
+            </Link>
+          </div>
+
+          {/* Price Category Chart */}
+          <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <PriceCategoryChart compact />
+            <Link href="/priceCategories" passHref legacyBehavior>
+              <a className="absolute inset-0 z-10" aria-label="Go to Category Frequency Page" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
