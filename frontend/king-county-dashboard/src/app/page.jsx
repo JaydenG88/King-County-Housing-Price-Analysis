@@ -7,7 +7,6 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <div className="flex min-h-screen bg-gray-100">
-        <SideBar />
       <main className="flex-1 p-6">
         <div className="w-full max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-4">
