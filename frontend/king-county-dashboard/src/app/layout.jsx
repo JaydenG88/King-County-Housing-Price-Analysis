@@ -1,25 +1,27 @@
-// app/layout.jsx
-import "./globals.css";
-import SideBar from "@/components/UI/SideBar";
 import Header from "@/components/UI/Header";
+import SideBar from "@/components/UI/SideBar";
+import "@/app/globals.css"; // adjust if yours is elsewhere
 
 export const metadata = {
   title: "King County Housing Dashboard",
-  description: "Explore trends and insights from King County housing data",
+  description: "Visualizing trends across King County real estate",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="antialiased text-gray-900">
-        <Header />
-        <div className="flex h-screen">
-          {/* Sidebar */}
-          <SideBar />
-          {/* Main Content */}
-          <div className="flex flex-col flex-1">
-            {/* Page Content */}
-            <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
+    <html lang="en" className="h-full overflow-hidden">
+      <body className="h-full overflow-hidden">
+        <div className="flex flex-col h-screen">
+          {/* Top Header */}
+          <Header />
+
+          {/* Main area below header */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar */}
+            <SideBar />
+
+            {/* Main scrollable content */}
+            <main className="flex-1 overflow-y-auto p-4 bg-gray-100">
               {children}
             </main>
           </div>

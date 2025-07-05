@@ -1,45 +1,43 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { useState } from 'react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Home, BarChart2, TrendingUp, Grid, Star } from 'lucide-react';
 
-export default function SideBar( ) {
-  const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Averages Chart", href: "/averages" },
-    { name: "Price Trends Chart", href: "/priceTrends" },
-    { name: "Correlations Chart", href: "/correlations" },
-    { name: "Price Categories Chart", href: "/priceCategories" },
-    { name: "Best Valued Homes", href: "/bestValued" },
-  ];
+const navItems = [
+  { name: "Home", href: "/", icon: <Home size={20} /> },
+  { name: "Averages", href: "/averages", icon: <BarChart2 size={20} /> },
+  { name: "Trends", href: "/priceTrends", icon: <TrendingUp size={20} /> },
+  { name: "Correlations", href: "/correlations", icon: <Grid size={20} /> },
+  { name: "Price Categories", href: "/priceCategories", icon: <BarChart2 size={20} /> },
+  { name: "Best Valued", href: "/bestValue", icon: <Star size={20} /> },
+];
 
+export default function SideNav() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
 
   return (
     <div
-      className={`${
-        isCollapsed ? "w-16" : "w-64"
-      } border-r border-gray-200 bg-white duration-300 ease-in-out transform hidden sm:flex flex-col h-screen`}
+      className={`bg-white border-r h-[calc(100vh-64px)] top-16 left-0 z-40 fixed transition-all duration-300 ${
+        isCollapsed ? 'w-16' : 'w-64'
+      }`}
     >
-      {/* Toggle Button */}
-      <button
-        onClick={toggleCollapse}
-        className="p-2 self-end m-2 text-gray-600 hover:text-gray-800"
-        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-      >
-        {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-      </button>
+      <div className="flex justify-end px-2 py-2 border-b">
+        <button onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
 
-      {/* Optional nav items go here */}
-      <nav className="flex-1 mt-4">
-        {/* Example placeholder */}
-        <ul className="space-y-2 px-2">
-          <li className="text-gray-700">🏠 Dashboard</li>
+      <nav className="mt-2">
+        <ul className="space-y-1">
+          {navItems.map((item, index) => (
+            <li key={index}>
+              <Link href={item.href} className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition">
+                {item.icon}
+                {!isCollapsed && <span>{item.name}</span>}
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
     </div>
