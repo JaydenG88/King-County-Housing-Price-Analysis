@@ -55,12 +55,17 @@ export default function PriceCategoryChart({ compact = false }) {
     return order.indexOf(a.category) - order.indexOf(b.category);
     });
 
-    const chartHeight = (compact ? 300 : 700);
 
 
     return (
-      <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 ml-auto"}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency: {region}</h2>
+      <div
+        className={`bg-white shadow-md rounded-lg ${
+          compact
+            ? "max-w-md mx-auto"
+            : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"
+        }`}
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency: {region}</h2>
         
         {!compact && (
             <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
@@ -72,7 +77,14 @@ export default function PriceCategoryChart({ compact = false }) {
                 /> 
             </div>
         )}
-            <ResponsiveContainer width="100%" height={chartHeight}>
+     <div
+        className="w-full"
+        style={{
+          height: compact ? "300px" : "calc(100vh - 220px)",
+          minHeight: "300px",
+        }}
+      >
+            <ResponsiveContainer width="100%" >
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="category" />
                 <YAxis />
@@ -81,5 +93,6 @@ export default function PriceCategoryChart({ compact = false }) {
             </BarChart>
             </ResponsiveContainer>
         </div>
+    </div>
     );
 }

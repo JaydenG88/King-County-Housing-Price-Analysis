@@ -1,5 +1,4 @@
 import OverTimeChart from "@/components/charts/OverTimeChart";
-import SideBar from "@/components/UI/SideBar";
 
 export default function priceTrendsPage() {
     return (

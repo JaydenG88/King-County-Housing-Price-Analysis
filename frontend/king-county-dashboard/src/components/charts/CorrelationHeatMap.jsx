@@ -36,16 +36,23 @@ export default function CorrelationHeatMap({ compact = false }) {
         return <div>Error: {error.message}</div>;
     }
 
-    const chartHeight = (compact ? 300 : 700);
 
     return (
-      <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 ml-auto"}`}>
+        <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"}`}>
             <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Correlation Heat Map</h2>
+            {/* Responsive height container */}
+            <div
+                className="w-full"
+                style={{
+                height: compact ? "300px" : "calc(100vh - 220px)", 
+                minHeight: "300px",
+                }}
+            >
             <ReactApexChart
             options={{
                 chart: {
                 type: "heatmap",
-                height: 350
+                height: "100%",
                 },
                 dataLabels: {
                 enabled: false
@@ -63,8 +70,9 @@ export default function CorrelationHeatMap({ compact = false }) {
                 }))
             }))}
             type="heatmap"
-            height={chartHeight}
+            height="100%"
             />
+            </div>
         </div>
     )
 }

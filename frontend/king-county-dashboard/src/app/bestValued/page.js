@@ -1,5 +1,4 @@
 import BestValueCard from "@/components/cards/BestValueCard";
-import SideBar from "@/components/UI/SideBar";
 
 export default function BestValuedPage() {
   return (

@@ -1,5 +1,4 @@
 import CorrelationHeatMap from "@/components/charts/CorrelationHeatMap";
-import SideBar from "@/components/UI/SideBar";
 
 export default function CorrelationsPage() {
     return (
