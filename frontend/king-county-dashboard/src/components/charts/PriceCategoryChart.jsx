@@ -50,7 +50,7 @@ export default function PriceCategoryChart({ compact = false }) {
         return <div>Loading...</div>;
     }
 
-    const order = ["low", "medium_low", "medium_high", "high"];
+    const order = ["Q1 (Lowest 25%)", "Q2 (25%-50%)", "Q3 (50%-75%)", "Q4 (Top 25%)"];
     const chartData = data.sort((a, b) => {
     return order.indexOf(a.category) - order.indexOf(b.category);
     });
