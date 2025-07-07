@@ -95,7 +95,7 @@ def get_price_per_sqft(df):
 # Adds price categorizations from low-high based on quantiles of overall king county
 def categorize_price(df):
     bins = df['price'].quantile([0, 0.25, 0.5, 0.75, 1.0])
-    labels = ["low", "medium_low", "medium_high", "high"]
+    labels = ["Q1 (Lowest 25%)", "Q2 (25%-50%)", "Q3 (50%-75%)", "Q4 (Top 25%)"]
 
     df["price_category"] = pd.cut(df["price"], bins=bins, labels=labels, include_lowest=True)
     return df
