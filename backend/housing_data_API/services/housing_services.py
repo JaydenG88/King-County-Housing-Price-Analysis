@@ -44,7 +44,7 @@ def get_lowest_price_per_sqft(region):
             {"best_valued_listings": {"$elemMatch": {"region": region}}}
              ,{"best_valued_listings.$": 1, "_id": 0}
         )
-        return lowest.get("best_valued_listings") if lowest else None
+        return lowest.get("best_valued_listings")[0].get("listings") if lowest else None
     except PyMongoError as e:
         print(f"Error fetching lowest price per sqft by city: {e}")
         return None
