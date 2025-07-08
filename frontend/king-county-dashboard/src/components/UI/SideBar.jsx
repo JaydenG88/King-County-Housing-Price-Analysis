@@ -10,7 +10,7 @@ const navItems = [
   { name: "Trends", href: "/priceTrends", icon: <TrendingUp size={20} /> },
   { name: "Correlations", href: "/correlations", icon: <Grid size={20} /> },
   { name: "Price Categories", href: "/priceCategories", icon: <BarChart2 size={20} /> },
-  { name: "Best Valued", href: "/bestValue", icon: <Star size={20} /> },
+  { name: "Best Valued Listings", href: "/bestValued", icon: <Star size={20} /> },
 ];
 
 export default function SideNav() {
