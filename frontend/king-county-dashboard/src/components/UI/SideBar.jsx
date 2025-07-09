@@ -7,9 +7,9 @@ import { ChevronLeft, ChevronRight, Home, BarChart2, TrendingUp, Grid, Star } fr
 const navItems = [
   { name: "Home", href: "/", icon: <Home size={20} /> },
   { name: "Averages", href: "/averages", icon: <BarChart2 size={20} /> },
-  { name: "Trends", href: "/priceTrends", icon: <TrendingUp size={20} /> },
+  { name: "Cost Over Time", href: "/priceTrends", icon: <TrendingUp size={20} /> },
   { name: "Correlations", href: "/correlations", icon: <Grid size={20} /> },
-  { name: "Price Categories", href: "/priceCategories", icon: <BarChart2 size={20} /> },
+  { name: "Price Bracket Distribution", href: "/priceDistrubutions", icon: <BarChart2 size={20} /> },
   { name: "Best Valued Listings", href: "/bestValued", icon: <Star size={20} /> },
 ];
 

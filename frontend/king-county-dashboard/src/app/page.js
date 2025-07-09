@@ -1,7 +1,7 @@
 import AveragesChart from "../components/charts/AveragesChart";
 import OverTimeChart from "../components/charts/OverTimeChart";
 import CorrelationHeatMap from "../components/charts/CorrelationHeatMap";
-import PriceCategoryChart from "../components/charts/PriceCategoryChart";
+import PriceCategoryChart from "../components/charts/PriceDistributionChart";
 import Link from "next/link";
 
 export default function HomePage() {

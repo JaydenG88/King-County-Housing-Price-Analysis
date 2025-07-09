@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Bar } from "recharts";
 import DropDown from "../UI/DropDown";
 
-export default function PriceCategoryChart({ compact = false }) {
+export default function PriceDistributionChart({ compact = false }) {
     const [data, setData] = useState([]);
     const [region, setRegion] = useState("Seattle");
     const [regions, setRegions] = useState([]);
@@ -65,7 +65,7 @@ export default function PriceCategoryChart({ compact = false }) {
             : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"
         }`}
       >
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Category Frequency: {region}</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Price Bracket Distribution (Quartiles): {region}</h2>
         
         {!compact && (
             <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
