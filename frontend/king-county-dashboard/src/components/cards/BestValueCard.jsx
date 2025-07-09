@@ -3,7 +3,7 @@
 export default function BestValueCard({ sqft, price, zip, city, state, street_address, bedrooms, bathrooms, url, image, price_per_sqft, price_category }) {
 
     return (
-        <div className="w-full max-w-sm rounded-2xl shadow-md overflow-hidden border border-gray-200 bg-white">
+        <div className="w-full max-w-sm rounded-2xl shadow-md overflow-hidden border border-gray-200 bg-white hover:scale-102 hover:shadow-lg transition-transform duration-300">
             <a href={url} target="_blank" rel="noopener noreferrer">
             <img src={image} alt="House" className="w-full h-48 object-cover" />
             <div className="p-4">

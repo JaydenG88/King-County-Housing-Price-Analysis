@@ -13,19 +13,19 @@ export default function HomePage() {
             King County Housing Price Analysis Overview
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
               <AveragesChart compact />
               <Link href="/averages" className="absolute inset-0 z-10" aria-label="Go to Averages Page" />
             </div>
-            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
               <OverTimeChart compact />
               <Link href="/priceTrends" className="absolute inset-0 z-10" aria-label="Go to Over Time Page" />
             </div>
-            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
               <CorrelationHeatMap compact />
               <Link href="/correlations" className="absolute inset-0 z-10" aria-label="Go to Correlations Page" />
             </div>
-            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:shadow-md transition">
+            <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
               <PriceCategoryChart compact />
               <Link href="/priceCategories" className="absolute inset-0 z-10" aria-label="Go to Category Frequency Page" />
             </div>
