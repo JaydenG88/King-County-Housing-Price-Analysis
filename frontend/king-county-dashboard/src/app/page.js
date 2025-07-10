@@ -27,7 +27,7 @@ export default function HomePage() {
             </div>
             <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
               <PriceCategoryChart compact />
-              <Link href="/priceCategories" className="absolute inset-0 z-10" aria-label="Go to Category Frequency Page" />
+              <Link href="/priceDistributions" className="absolute inset-0 z-10" aria-label="Go to Price Distribution Page" />
             </div>
           </div>
         </div>

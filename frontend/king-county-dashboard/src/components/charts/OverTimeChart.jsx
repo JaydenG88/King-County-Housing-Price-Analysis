@@ -147,8 +147,8 @@ export default function OverTimeChart({ compact = false }) {
                     ? "Average Price per Sqft ($)"
                     : "Average Square Footage",
                 position: "insideLeft",
-                offset: compact ? 30 : -30,
-                fontSize: 14,
+                offset: compact ? 30 : -50,
+                fontSize: compact ? 14 : 18,
                 angle: -90,
               }}
               tick={compact ? false : true}

@@ -97,7 +97,7 @@ export default function PriceDistributionChart({ compact = false }) {
                         value: "Quartiles",
                         position: "insideBottom",
                         offset: compact ? 0 : -5,
-                        fontSize: 14,
+                        fontSize: compact ? 14 : 18,
                     }}
 
                     tick={{ fontSize: compact ? 10 : 12 }}
@@ -109,7 +109,7 @@ export default function PriceDistributionChart({ compact = false }) {
                         value: "Number of Listings",
                         angle: -90,
                         position: "insideLeft",
-                        fontSize: 14,
+                        fontSize: compact ? 14 : 18,
                         offset: compact ? 20 : 0,
                     }}
                     tick={{ fontSize: compact ? 10 : 12 }}

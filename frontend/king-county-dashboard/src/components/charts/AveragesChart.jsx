@@ -99,7 +99,7 @@ export default function AveragesChart({ compact = false }) {
                     : "Average Square Footage",
                 position: "bottom",
                 offset: 10,
-                fontSize: 14,
+                fontSize: compact ? 14 : 18,
               }}
             />
             <YAxis
@@ -108,11 +108,11 @@ export default function AveragesChart({ compact = false }) {
               width={compact ? 90 : 150}
               interval={0}
               label={{
-                value: "Region",
+                value: "King County Regions",
                 angle: -90,
                 position: "insideLeft",
                 offset: compact ? 50 : 0,
-                fontSize: 14,
+                fontSize: compact ? 14 : 18,
               }}
               tick={({ x, y, payload }) => (
                 <text
