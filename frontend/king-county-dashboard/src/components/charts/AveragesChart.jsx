@@ -77,7 +77,7 @@ export default function AveragesChart({ compact = false }) {
       <div
         className="w-full"
         style={{
-          height: compact ? "300px" : "calc(100vh - 220px)", 
+          height: compact ? "300px" : "calc(100vh - 150px)", 
           minHeight: "300px",
         }}
       >
@@ -108,10 +108,10 @@ export default function AveragesChart({ compact = false }) {
               width={compact ? 90 : 150}
               interval={0}
               label={{
-                value: compact ? "" : "Region",
+                value: "Region",
                 angle: -90,
                 position: "insideLeft",
-                offset: -5,
+                offset: compact ? 50 : 0,
                 fontSize: 14,
               }}
               tick={({ x, y, payload }) => (

@@ -118,9 +118,21 @@ export default function OverTimeChart({ compact = false }) {
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart 
+              data={data}
+              margin={{ top: 20, right: 30, left: compact ? 0 : 80, bottom: 40 }}
+            >
+
             <XAxis
               dataKey="date"
+
+              label={{
+                value: "Date",
+                position: "bottom",
+                offset: 10,
+                fontSize: 14,
+              }}
+
               tick={({ x, y, payload }) => (
                 <text
                   x={x}
@@ -135,6 +147,19 @@ export default function OverTimeChart({ compact = false }) {
               )}
             />
             <YAxis
+
+              label={{
+                value:  
+                    metric === "price"
+                    ? "Average Price ($)"
+                    : metric === "price_per_sqft"
+                    ? "Average Price per Sqft ($)"
+                    : "Average Square Footage",
+                position: "insideLeft",
+                offset: compact ? 30 : -30,
+                fontSize: 14,
+                angle: -90,
+              }}
               tick={({ x, y, payload }) => (
                 <text
                   x={x}
