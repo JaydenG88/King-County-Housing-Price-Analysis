@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Line,
 } from "recharts";
+import { format, parseISO } from "date-fns";
 import DropDown from "../UI/DropDown";
 
 export default function OverTimeChart({ compact = false }) {
@@ -23,17 +24,15 @@ export default function OverTimeChart({ compact = false }) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const dataRes = await fetch(
+        const res = await fetch(
           `https://king-county-housing-price-analysis.onrender.com/api/price_trends/${region}/${metric}/${type}`
         );
-        if (!dataRes.ok) {
-          throw new Error("Network response was not ok " + dataRes.statusText);
-        }
+        if (!res.ok) throw new Error("Network response was not ok");
 
-        let json = await dataRes.json();
+        const json = await res.json();
 
         const formatted = json.map((item) => ({
-          date: item.date,
+          date: new Date(item.date).getTime(), 
           value: Number(item.value.toFixed(2)),
         }));
 
@@ -50,9 +49,7 @@ export default function OverTimeChart({ compact = false }) {
         const res = await fetch(
           `https://king-county-housing-price-analysis.onrender.com/api/regions`
         );
-        if (!res.ok) {
-          throw new Error("Network response was not ok " + res.statusText);
-        }
+        if (!res.ok) throw new Error("Network response was not ok");
         const regionsData = await res.json();
         setRegions(regionsData);
       } catch (error) {
@@ -67,12 +64,12 @@ export default function OverTimeChart({ compact = false }) {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
+  const firstYear = new Date(data[0]?.date).getFullYear() || "";
+
   return (
     <div
       className={`bg-white shadow-md rounded-lg ${
-        compact
-          ? "max-w-md mx-auto"
-          : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"
+        compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"
       }`}
     >
       <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
@@ -113,44 +110,38 @@ export default function OverTimeChart({ compact = false }) {
       <div
         className="w-full"
         style={{
-          height: compact ? "300px" : "calc(100vh - 220px)",
+          height: compact ? "300px" : "calc(100vh - 180px)",
           minHeight: "300px",
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-              data={data}
-              margin={{ top: 20, right: 30, left: compact ? 0 : 80, bottom: 40 }}
-            >
-
+          <LineChart
+            data={data}
+            margin={{
+              top: 20,
+              right: 30,
+              left: compact ? 0 : 80,
+              bottom: 40,
+            }}
+          >
             <XAxis
               dataKey="date"
-
+              scale="time"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              tickFormatter={(date) => format(new Date(date), "MMM")}
+              tick={{ fontSize: 12 }}
               label={{
-                value: "Date",
-                position: "bottom",
-                offset: 10,
-                fontSize: 14,
+                value: firstYear,
+                position: "insideBottomLeft",
+                offset: -10,
+                fontSize: 12,
               }}
-
-              tick={({ x, y, payload }) => (
-                <text
-                  x={x}
-                  y={y}
-                  fill="#000"
-                  fontSize={compact ? 10 : 12}
-                  textAnchor="end"
-                  alignmentBaseline="middle"
-                >
-                  {!compact ? payload.value : ""}
-                </text>
-              )}
             />
             <YAxis
-
               label={{
-                value:  
-                    metric === "price"
+                value:
+                  metric === "price"
                     ? "Average Price ($)"
                     : metric === "price_per_sqft"
                     ? "Average Price per Sqft ($)"
@@ -160,20 +151,13 @@ export default function OverTimeChart({ compact = false }) {
                 fontSize: 14,
                 angle: -90,
               }}
-              tick={({ x, y, payload }) => (
-                <text
-                  x={x}
-                  y={y}
-                  fill="#000"
-                  fontSize={compact ? 10 : 12}
-                  textAnchor="end"
-                  alignmentBaseline="middle"
-                >
-                  {!compact ? payload.value : ""}
-                </text>
-              )}
+              tick={{ fontSize: compact ? 10 : 12 }}
             />
-            <Tooltip />
+          <Tooltip
+            wrapperStyle={{ backgroundColor: "#fff", border: "1px solid #ccc", fontSize: 14, color: "black" }}
+            labelFormatter={(value) => format(new Date(value), "MMM d, yyyy")}
+            formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
+          />
             <Line
               type="monotone"
               dataKey="value"

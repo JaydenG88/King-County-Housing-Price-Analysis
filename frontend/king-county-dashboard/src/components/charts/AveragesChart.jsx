@@ -127,7 +127,9 @@ export default function AveragesChart({ compact = false }) {
                 </text>
               )}
             />
-            <Tooltip />
+            <Tooltip
+              wrapperStyle={{ backgroundColor: "#fff", border: "1px solid #ccc", fontSize: 14, color: "black" }}
+            />
             <Bar dataKey="value" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
