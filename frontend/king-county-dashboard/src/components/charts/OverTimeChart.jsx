@@ -129,7 +129,7 @@ export default function OverTimeChart({ compact = false }) {
               scale="time"
               type="number"
               domain={["dataMin", "dataMax"]}
-              tickFormatter={(date) => format(new Date(date), "MMM")}
+              tickFormatter={ (date) => format(new Date(date), "MMM")}
               tick={{ fontSize: 12 }}
               label={{
                 value: firstYear,
@@ -151,7 +151,7 @@ export default function OverTimeChart({ compact = false }) {
                 fontSize: 14,
                 angle: -90,
               }}
-              tick={{ fontSize: compact ? 10 : 12 }}
+              tick={compact ? false : true}
             />
           <Tooltip
             wrapperStyle={{ backgroundColor: "#fff", border: "1px solid #ccc", fontSize: 14, color: "black" }}
