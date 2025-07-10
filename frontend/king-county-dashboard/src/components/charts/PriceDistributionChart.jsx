@@ -77,18 +77,47 @@ export default function PriceDistributionChart({ compact = false }) {
                 /> 
             </div>
         )}
-     <div
+    <div
         className="w-full"
         style={{
           height: compact ? "300px" : "calc(100vh - 220px)",
           minHeight: "300px",
         }}
       >
-            <ResponsiveContainer width="100%" >
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip />
+        <ResponsiveContainer width="100%" >
+            <BarChart data={chartData}             
+            margin={{
+              top: 20,
+              right: 30,
+              left: compact ? 0 : 80,
+              bottom: 40,
+            }}>
+                <XAxis dataKey="category" 
+                    label={{
+                        value: "Quartiles",
+                        position: "insideBottom",
+                        offset: compact ? 0 : -5,
+                        fontSize: 14,
+                    }}
+
+                    tick={{ fontSize: compact ? 10 : 12 }}
+                 />
+                <YAxis 
+                    type="number"
+                    domain={[0, "dataMax"]}
+                    label={{
+                        value: "Number of Listings",
+                        angle: -90,
+                        position: "insideLeft",
+                        fontSize: 14,
+                        offset: compact ? 20 : 0,
+                    }}
+                    tick={{ fontSize: compact ? 10 : 12 }}
+                />
+
+                <Tooltip
+                    wrapperStyle={{ backgroundColor: "#fff", border: "1px solid #ccc", fontSize: 14, color: "black" }}
+                />
                 <Bar dataKey="value" fill="#8884d8" />
             </BarChart>
             </ResponsiveContainer>
