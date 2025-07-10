@@ -85,15 +85,35 @@ export default function AveragesChart({ compact = false }) {
           <BarChart
             data={averages}
             layout="vertical"
-            margin={{ top: 0, right: 30, left: compact ? -20 : 0, bottom: 20 }}
+            margin={{ top: 20, right: 30, left: compact ? 0 : 80, bottom: 40 }}
             barGap={0}
           >
-            <XAxis type="number" />
+            <XAxis
+              type="number"
+              label={{
+                value:
+                  metric === "price"
+                    ? "Average Price ($)"
+                    : metric === "price_per_sqft"
+                    ? "Average Price per Sqft ($)"
+                    : "Average Square Footage",
+                position: "bottom",
+                offset: 10,
+                fontSize: 14,
+              }}
+            />
             <YAxis
               dataKey="region"
               type="category"
               width={compact ? 90 : 150}
               interval={0}
+              label={{
+                value: compact ? "" : "Region",
+                angle: -90,
+                position: "insideLeft",
+                offset: -5,
+                fontSize: 14,
+              }}
               tick={({ x, y, payload }) => (
                 <text
                   x={x}
