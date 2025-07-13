@@ -1,5 +1,6 @@
 from database.db_setup import get_database
 from pymongo.errors import PyMongoError
+from datetime import datetime
 
 FINDINGS_COLLECTION = get_database().king_co_housing_findings
 
@@ -106,3 +107,17 @@ def get_regions():
         print(f"Error fetching regions: {e}")
         return None
 
+def get_date():
+    try:
+        # Gets most recent date from price trends
+        overtime = get_price_trends("king county", "price", "median")
+        date = overtime[len(overtime) - 1]["date"] if overtime else None
+        
+        if date:
+            formatted_date = datetime.strptime(date, "%Y-%m-%d").strftime("%B %d, %Y")
+            return formatted_date
+        
+        return None
+    except PyMongoError as e:
+        print(f"Error fetching date: {e}")
+        return None        
