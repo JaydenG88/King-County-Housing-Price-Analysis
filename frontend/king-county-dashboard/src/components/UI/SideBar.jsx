@@ -31,7 +31,7 @@ export default function SideNav() {
       <nav className="mt-2">
         <ul className="space-y-1">
           {navItems.map((item, index) => (
-            <li key={index}>
+            <li key={index} className='hover:bg-gray-200 transition rounded px-3 py-2'>
               <Link href={item.href} className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition">
                 {item.icon}
                 {!isCollapsed && <span>{item.name}</span>}
