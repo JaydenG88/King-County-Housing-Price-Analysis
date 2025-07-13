@@ -1,6 +1,7 @@
 "use client";
 
 import BestValueCard from "@/components/cards/BestValueCard";
+import Regions from "@/utils/Regions";
 import DropDown from "@/components/UI/DropDown";
 import { useEffect, useState } from "react";
 
