@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Line,
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, set } from "date-fns";
 import DropDown from "../UI/DropDown";
 import Regions from "@/utils/Regions"
 
@@ -24,6 +24,16 @@ export default function OverTimeChart({ compact = false }) {
 
   useEffect(() => {
     async function fetchData() {
+
+      try {
+        const regionList = await Regions(); 
+        if (regionList.length > 0) {
+          setRegions(regionList);
+        }
+      } catch (error) {
+        setError(error);
+      }
+
       try {
         const res = await fetch(
           `https://king-county-housing-price-analysis.onrender.com/api/price_trends/${region}/${metric}/${type}`
@@ -44,21 +54,7 @@ export default function OverTimeChart({ compact = false }) {
         setLoading(false);
       }
     }
-
-    async function fetchRegions() {
-      try {
-        const res = await fetch(
-          `https://king-county-housing-price-analysis.onrender.com/api/regions`
-        );
-        if (!res.ok) throw new Error("Network response was not ok");
-        const regionsData = await res.json();
-        setRegions(regionsData);
-      } catch (error) {
-        setError(error);
-      }
-    }
-
-    fetchRegions();
+    
     fetchData();
   }, [type, metric, region]);
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Bar } from "recharts";
 import DropDown from "../UI/DropDown";
+import Regions from "@/utils/Regions";
 
 export default function PriceDistributionChart({ compact = false }) {
     const [data, setData] = useState([]);
@@ -12,6 +13,16 @@ export default function PriceDistributionChart({ compact = false }) {
 
     useEffect(() => {
         async function fetchData() {
+            try {
+                const regionList = await Regions(); 
+                const filteredRegions = regionList.filter(r => r !== "King County");
+                if (filteredRegions.length > 0) {
+                    setRegions(filteredRegions);
+                }
+            } catch (error) {
+                setError(error);
+            }
+
             try {
                 const res = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/price_category_frequency/${region}`);
                 if (!res.ok) {
@@ -26,23 +37,8 @@ export default function PriceDistributionChart({ compact = false }) {
             }
         }
 
-       async function fetchRegions() {
-            try {
-                const res = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/regions`)
-                if (!res.ok) {
-                    throw new Error("Network response was not ok" + res.statusText);
-                }
-                const regionsData = await res.json();
-                const filtered = regionsData.filter(region => region.toLowerCase() !== "king county");
-
-                setRegions(filtered);
-            } catch (error) {
-                setError(error);
-            }
-        }
-
         fetchData();
-        fetchRegions();
+
 
     }, [region])
 

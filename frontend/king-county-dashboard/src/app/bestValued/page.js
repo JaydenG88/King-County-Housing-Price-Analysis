@@ -12,20 +12,18 @@ export default function BestValuedPage() {
   const [regions, setRegions] = useState([]);
 
   useEffect(() => {
-    async function fetchRegions() {
-      try {
-        const res = await fetch("https://king-county-housing-price-analysis.onrender.com/api/regions");
-        if (!res.ok) {
-          throw new Error("Network response was not ok" + res.statusText);
-        }
-        const data = await res.json();
-        setRegions(data);
-      } catch (error) {
-        console.error("Error fetching regions:", error);
-      }
-    }
-
+    
     async function fetchData() {
+
+      try {
+        const regionList = await Regions();
+        if (regionList.length > 0) {
+          setRegions(regionList);
+        }
+      } catch (error) {
+        setError(error);
+      }
+
       try {
         const res = await fetch(`https://king-county-housing-price-analysis.onrender.com/api/lowest_price_per_sqft/${region}`);
         if (!res.ok) {
@@ -40,7 +38,6 @@ export default function BestValuedPage() {
       }
     }
 
-    fetchRegions();
     fetchData();
     
   }, [region]);
