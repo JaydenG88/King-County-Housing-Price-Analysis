@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import UpdateDate from "@/utils/UpdateDate";
 export default function Header() {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState("...");
 
   useEffect(() => {
     const fetchDate = async () => {
