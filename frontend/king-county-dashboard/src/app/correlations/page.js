@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const CorrelationHeatMap = dynamic(() => import('@/components/charts/CorrelationHeatMap'), {
