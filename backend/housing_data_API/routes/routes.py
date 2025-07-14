@@ -38,3 +38,9 @@ def date():
     date = get_date()
     return jsonify(date), 200
 
+def ping():
+    user_agent = request.headers.get("User-Agent", "")
+    if "UptimeRobot" in user_agent or "ping" in request.path:
+        return {"ok": True}, 200
+    else:
+        return {"error": "Unauthorized ping"}, 403
