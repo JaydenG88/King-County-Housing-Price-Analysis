@@ -43,9 +43,29 @@ export default function BestValuedPage() {
     
   }, [region]);
 
-  if (loading) {
-    return <div className="w-full max-w-7xl mx-auto p-4">Loading...</div>;
-  }
+if (loading) return (
+  <div className="w-full max-w-7xl mx-auto p-4 bg-gray-100 min-h-screen">
+    <div className="bg-white rounded-xl shadow-lg p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+        Best Valued Listings
+      </h1>
+      
+      {/* Loading content area */}
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-600 font-medium text-lg">Loading best valued listings...</span>
+          <div className="flex space-x-1 mt-2">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 bg-gray-100 min-h-screen">
