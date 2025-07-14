@@ -1,5 +1,8 @@
 import dynamic from "next/dynamic";
-import CorrelationHeatMap from "@/components/charts/CorrelationHeatMap";
+
+const CorrelationHeatMap = dynamic(() => import('@/components/charts/CorrelationHeatMap'), {
+    ssr: false,
+});
 
 export default function CorrelationsPage() {
     return (
