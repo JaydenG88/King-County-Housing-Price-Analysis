@@ -1,7 +1,7 @@
 import AveragesChart from "../components/charts/AveragesChart";
 import OverTimeChart from "../components/charts/OverTimeChart";
 import CorrelationHeatMap from "../components/charts/CorrelationHeatMap";
-import PriceCategoryChart from "../components/charts/PriceDistributionChart";
+import PriceDistributionChart from "../components/charts/PriceDistributionChart";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -26,7 +26,7 @@ export default function HomePage() {
               <Link href="/correlations" className="absolute inset-0 z-10" aria-label="Go to Correlations Page" />
             </div>
             <div className="relative bg-gray-50 rounded-lg shadow p-3 hover:scale-102 hover:shadow-lg transition-transform duration-300">
-              <PriceCategoryChart compact />
+              <PriceDistributionChart compact />
               <Link href="/priceDistributions" className="absolute inset-0 z-10" aria-label="Go to Price Distribution Page" />
             </div>
           </div>

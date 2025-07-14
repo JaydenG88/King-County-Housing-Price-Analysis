@@ -58,7 +58,14 @@ export default function OverTimeChart({ compact = false }) {
     fetchData();
   }, [type, metric, region]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[300px] bg-white shadow-md rounded-lg">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-gray-600 font-medium">Loading chart data...</span>
+      </div>
+    </div>
+  );
   if (error) return <div>Error: {error.message}</div>;
 
   const firstYear = new Date(data[0]?.date).getFullYear() || "";

@@ -10,6 +10,7 @@ export default function PriceDistributionChart({ compact = false }) {
     const [region, setRegion] = useState("Seattle");
     const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -42,9 +43,15 @@ export default function PriceDistributionChart({ compact = false }) {
 
     }, [region])
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    if (loading) return (
+    <div className="flex items-center justify-center min-h-[300px] bg-white shadow-md rounded-lg">
+        <div className="flex flex-col items-center space-y-4">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-gray-600 font-medium">Loading chart data...</span>
+        </div>
+    </div>
+    );
+    if (error) return <div>Error: {error.message}</div>;
 
     const order = ["Q1 (Lowest 25%)", "Q2 (25%-50%)", "Q3 (50%-75%)", "Q4 (Top 25%)"];
     const chartData = data.sort((a, b) => {
