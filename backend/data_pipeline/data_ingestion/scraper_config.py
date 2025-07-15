@@ -1,6 +1,7 @@
 # The main URL of the website being scraped
 TARGET_URL = "https://www.redfin.com/"
 
+SEARCH_FILTER = "filter/property-type=house"
 # Cities that will be searched on Redfin, currently searching King County cities in WA
 # Array storing dictionaries containing the city, redfin city ID code, and state
 # Path components: https://www.redfin.com/{location_type}/{code}/{state}/{location_name}

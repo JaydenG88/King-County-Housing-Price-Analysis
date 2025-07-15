@@ -10,7 +10,7 @@ from datetime import date
 from database.db_setup import get_database
 import random
 import re
-from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME
+from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME, SEARCH_FILTER
 
 # Main function that runs the data extraction process
 # Searches locations and extracts data using a web scraper and web driver
@@ -201,7 +201,7 @@ def search_location(location):
     
     try:
         # Formats URL that will be searched by the webdriver
-        city_url = f"{TARGET_URL}{location_type}/{code}/{state}/{location_name}"
+        city_url = f"{TARGET_URL}{location_type}/{code}/{state}/{location_name}/{SEARCH_FILTER}"
         
         driver = initialize_driver()
         driver.get(city_url)
