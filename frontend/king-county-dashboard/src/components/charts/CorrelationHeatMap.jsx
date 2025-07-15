@@ -65,8 +65,30 @@ export default function CorrelationHeatMap({ compact = false }) {
                 xaxis: {
                 categories: data.keys
                 },
-                colors: ["#FF0000", "#00A100"]
+                colors: ["#FF0000", "#00A100"],
+                tooltip: {
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                    const value = series[seriesIndex][dataPointIndex];
+                    const x = w.globals.labels[dataPointIndex];
+                    const y = w.config.series[seriesIndex].name;
+
+                    return `
+                    <div style="
+                        color: #000000;  /* 👈 black font color */
+                        background-color: #fff;
+                        border: 1px solid #ccc;
+                        padding: 10px;
+                        font-size: 14px;
+                        border-radius: 6px;
+                    ">
+                        <div><strong>${y} vs ${x}</strong></div>
+                        <div>Value: ${value.toFixed(2)}</div>
+                    </div>
+                    `;
+                }
+                }
             }}
+
             series={data.keys.map((rowLabel, i) => ({
                 name: rowLabel,
                 data: data.keys.map((colLabel, j) => ({
