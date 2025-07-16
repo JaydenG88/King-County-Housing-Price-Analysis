@@ -19,7 +19,7 @@ LOCATIONS = [
     {"location_type": "city", "location_name": "Carnation", "code": "2630", "state": "WA"},
     {"location_type": "city", "location_name": "Clyde-Hill", "code": "3484", "state": "WA"},
     {"location_type": "city", "location_name": "Covington", "code": "3954", "state": "WA"},
-    {"location_type": "city", "location_name": "Des-Moines", "code": "5415", "state": "WA"},
+    {"location_type": "city", "location_name": "Des-Moines", "code": "4570", "state": "WA"},
     {"location_type": "city", "location_name": "Duvall", "code": "4914", "state": "WA"},
     {"location_type": "city", "location_name": "Enumclaw", "code": "29441", "state": "WA"},
     {"location_type": "city", "location_name": "Federal-Way", "code": "6064", "state": "WA"},
