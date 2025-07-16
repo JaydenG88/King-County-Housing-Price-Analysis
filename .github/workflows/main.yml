@@ -21,12 +21,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/data_pipeline/requirements_pipeline.txt
+          pip install -r data_pipeline/requirements_pipeline.txt
 
       - name: Run ETL script
         env:
           MONGO_PWD: ${{ secrets.MONGO_PWD }}
           MONGO_USER: ${{ secrets.MONGO_USER }}
           CLUSTER: ${{ secrets.CLUSTER }}
+          PYTHONPATH: backend
         run: |
-          python backend/data_pipeline/run_pipeline.py
+          python data_pipeline/run_pipeline.py
