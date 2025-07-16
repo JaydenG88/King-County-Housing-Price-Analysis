@@ -30,4 +30,4 @@ jobs:
           CLUSTER: ${{ secrets.CLUSTER }}
           PYTHONPATH: backend
         run: |
-          python backend/data_pipeline/run_pipeline.py
+          python -u backend/data_pipeline/run_pipeline.py
