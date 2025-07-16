@@ -10,6 +10,8 @@ from datetime import date
 from database.db_setup import get_database
 import random
 import re
+import shutil
+import tempfile
 from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME, SEARCH_FILTER
 
 # Main function that runs the data extraction process
@@ -21,8 +23,8 @@ def ingest_data():
     
     # Iterates through locations to scrape and process listings
     for location in LOCATIONS:
-        driver = search_location(location)
-        listings_html = extract_listings(driver)
+        driver, temp_profile = search_location(location)
+        listings_html = extract_listings(driver, temp_profile)
         
         if len(listings_html) >= 1:
             data += process_listings(listings_html)
@@ -49,23 +51,36 @@ def store_data_to_DB(data):
         
 # Initializes selenium webdriver to scrape dynamically loaded pages
 def initialize_driver():
-    # Randomly rotates through user agents to avoid bot detection
-    user_agent = random.choice(USER_AGENTS)
-    options = webdriver.ChromeOptions()
-    options.add_argument(f"user-agent={user_agent}")
-    options.add_argument("window-size=1280,1000")
-    driver = webdriver.Chrome(options=options)
-    # Utilizing selenium stealth to further avoid bot detection
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-    stealth(driver,
+    try:
+        user_agent = random.choice(USER_AGENTS)
+        temp_profile = tempfile.mkdtemp()  
+
+        options = webdriver.ChromeOptions()
+        options.add_argument(f"user-agent={user_agent}")
+        options.add_argument("window-size=1280,1000")
+        options.add_argument(f"--user-data-dir={temp_profile}")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--headless")
+
+        driver = webdriver.Chrome(options=options)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+        stealth(driver,
             languages=["en-US", "en"],
             vendor="Google Inc.",
             platform="Win32",
             webgl_vendor="Intel Inc.",
             renderer="Intel Iris OpenGL Engine",
             fix_hairline=True,
-            )
-    return driver
+        )
+        return driver, temp_profile
+    except Exception as e:
+        print(f"Error initializing driver: {e}")
+        if 'temp_profile' in locals():
+            shutil.rmtree(temp_profile)
+        return None, None
+
 
 # Filters out non-alphanumeric characters and returns cleaned string
 # @param str is the string being filtered
@@ -197,25 +212,23 @@ def search_location(location):
     location_type = location["location_type"]
     location_name = location["location_name"]
     code = location["code"]
-    state =location["state"]
-    
+    state = location["state"]
+
     try:
-        # Formats URL that will be searched by the webdriver
         city_url = f"{TARGET_URL}{location_type}/{code}/{state}/{location_name}/{SEARCH_FILTER}"
-        
-        driver = initialize_driver()
+        driver, temp_profile = initialize_driver()
         driver.get(city_url)
-        print(f"Sucessfully searched: {location_name}, {state}")
-        return driver
-    
+        print(f"Successfully searched: {location_name}, {state}")
+        return driver, temp_profile
     except Exception as e:
-        print(f"Error: Could not search location: {location_name}, {state}\nError:{e}")
+        print(f"Error: Could not search location: {location_name}, {state}\nError: {e}")
         driver.quit()
-        return None
+        shutil.rmtree(temp_profile)
+        return None, None
 
 # Extracts and returns the raw HTML of each listing from each page of the searched location
 # @param driver is the webdriver containing the searched location on redfin
-def extract_listings(driver):
+def extract_listings(driver, temp_profile):
     try: 
         total_listings_selector = ELEMENT_SELECTOR["total_listings_selector"]
         max_pages_selector = ELEMENT_SELECTOR["max_pages_selector"]
@@ -233,12 +246,14 @@ def extract_listings(driver):
     except Exception as e:
        print(f"Could not scrape page: {e}")
        driver.quit()
+       shutil.rmtree(temp_profile)
        return []
    
    # Skips location and returns an empty array if there are no listings 
     if total_listings == 0:
         print("No listings found")
         driver.quit()
+        shutil.rmtree(temp_profile)
         return []
    
    # Finds max pages to know if pages should be progressed through
@@ -250,12 +265,16 @@ def extract_listings(driver):
 
             print(f"Processed page: {max_pages}")
             driver.quit()
+            shutil.rmtree(temp_profile)
+
             
             print(f"Sucessfully extracted: {len(listings_html)} listings out of {total_listings}")
             return listings_html
         except Exception as e:
             print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
             driver.quit()
+            shutil.rmtree(temp_profile)
+
     
     listings_html = []
     # Iterates through each page and scrapes the HTML of each listing
@@ -286,6 +305,7 @@ def extract_listings(driver):
     print(f"Processed page: {max_pages}")
         
     driver.quit()
+    shutil.rmtree(temp_profile)
     print(f"Sucessfully extracted: {len(listings_html)} listings out of {total_listings}")
     return listings_html
 
