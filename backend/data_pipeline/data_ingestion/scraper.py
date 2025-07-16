@@ -7,7 +7,7 @@ from selenium_stealth import stealth
 from time import sleep
 from bs4 import BeautifulSoup
 from datetime import date
-from database.db_setup import get_database
+from backend.database.db_setup import get_database
 import random
 import re
 from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME, SEARCH_FILTER
