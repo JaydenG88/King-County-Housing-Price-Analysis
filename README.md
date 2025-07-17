@@ -5,7 +5,7 @@ It utilizes a weekly automated web-scraping ETL pipeline built with Python that 
 A Flask application is used to create a RESTful API for the backend, and a Next.js frontend data dashboard is built for data visualization and user interaction.
 
 ## Check it out!
-You can see my data dashboard [Here](https://king-county-housing-price-analysis-fxrigb9yi.vercel.app/) (Charts may take a minute to load if the Render instance is asleep)
+You can see my data dashboard [Here](https://king-county-housing-price-analysis.vercel.app/) (Charts may take a minute to load if the Render instance is asleep)
 <img width="1907" height="908" alt="image" src="https://github.com/user-attachments/assets/33bfe152-1180-49d7-88a5-a44788f70dd5" />
 
 ## Features
