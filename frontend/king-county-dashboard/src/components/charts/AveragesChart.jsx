@@ -7,6 +7,7 @@ import DropDown from "../UI/DropDown";
 export default function AveragesChart({ compact = false }) {
   const [averages, setAverages] = useState([]);
   const [type, setType] = useState("mean");
+  const [sort, setSort] = useState("Name");
   const [metric, setMetric] = useState("price");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +28,14 @@ export default function AveragesChart({ compact = false }) {
           value: Number(item.value.toFixed(2)),
         }));
 
+        if (sort === "Name") {
+          data.sort((a, b) => a.region.localeCompare(b.region));
+        } else if (sort === "Lowest") {
+          data.sort((a, b) => a.value - b.value);
+        } else if (sort === "Highest") {
+          data.sort((a, b) => b.value - a.value);
+        }
+
         setAverages(data);
       } catch (error) {
         setError(error);
@@ -36,7 +45,7 @@ export default function AveragesChart({ compact = false }) {
     }
 
     fetchData();
-  }, [type, metric]);
+  }, [type, metric, sort]);
 
 if (loading) return (
   <div className="flex items-center justify-center min-h-[300px] bg-white shadow-md rounded-lg">
@@ -74,6 +83,16 @@ if (error) return <div>Error: {error.message}</div>;
               options={[
                 { label: "Mean", value: "mean" },
                 { label: "Median", value: "median" },
+              ]}
+            />
+            <DropDown
+              label="Sort By"
+              value={sort}
+              onChange={setSort}
+              options={[
+                { label: "Name", value: "Name" },
+                { label: "Lowest", value: "Lowest" },
+                { label: "Highest", value: "Highest" },
               ]}
             />
           </div>
