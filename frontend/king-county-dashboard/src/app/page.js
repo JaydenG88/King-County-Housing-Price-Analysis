@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="flex-1 p-6 overflow-y-auto bg-gray-100">
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="p-4 bg-gray-100 min-h-screen">
         <div className="bg-white rounded-xl shadow-lg p-4">
           <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
             King County Housing Price Analysis Overview
