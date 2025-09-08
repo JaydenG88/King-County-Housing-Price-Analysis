@@ -168,8 +168,23 @@ def update_average_trend(all_averages, housing_data_db):
             }
             existing_entry = king_co_housing_findings.find_one(existing_entry_query)
             
-            # Adds a new date entry for the region if today's average trends are not already stored
-            if not existing_entry:
+            if existing_entry:
+                # Update the existing entry for today
+                update = {
+                    "$set": {
+                        "regions.$[r].price_trends.$[pt]": entry
+                    }
+                }
+                array_filters = [
+                    {"r.region": region},
+                    {"pt.date": today}
+                ]
+                
+                king_co_housing_findings.update_one(
+                    query, update, array_filters=array_filters
+                )
+            else:
+                # Add a new entry if no entry exists for today
                 update = { 
                     "$addToSet": {"regions.$[r].price_trends": entry}
                 }

@@ -10,8 +10,10 @@ from datetime import date
 from database.db_setup import get_database
 import random
 import re
+import os
 import shutil
 import tempfile
+import platform
 from data_ingestion.scraper_config import TARGET_URL, LOCATIONS, USER_AGENTS, ELEMENT_SELECTOR, SCROLL_LIMIT, SCROLL_STEP, SCROLL_TIME, SEARCH_FILTER
 
 # Main function that runs the data extraction process
@@ -21,17 +23,32 @@ def ingest_data():
     # stores the extracted and processed listings
     data = []
     
-    # Iterates through locations to scrape and process listings
-    for location in LOCATIONS:
-        driver, temp_profile = search_location(location)
-        listings_html = extract_listings(driver, temp_profile)
-        
-        if len(listings_html) >= 1:
-            data += process_listings(listings_html)
-        # Sleep to delay and not overload site requests
-        sleep(random.uniform(1,3))
+    # Use a subset of locations if running into memory issues
+    # Adjust the slicing to process locations in smaller batches if needed
+    target_locations = LOCATIONS
     
-    store_data_to_DB(data)
+    # Iterates through locations to scrape and process listings
+    for location in target_locations:
+        try:
+            driver, temp_profile = search_location(location)
+            if driver is None or temp_profile is None:
+                continue
+                
+            listings_html = extract_listings(driver, temp_profile)
+            
+            if listings_html and len(listings_html) >= 1:
+                data += process_listings(listings_html)
+            # Sleep to delay and not overload site requests
+            sleep(random.uniform(1,3))
+        except Exception as e:
+            print(f"Error processing location {location['location_name']}: {e}")
+            # Continue with other locations
+            continue
+    
+    if data:
+        store_data_to_DB(data)
+    else:
+        print("No data collected to store in the database")
 
 # Stores array of objects/dictionaries into Mongo database
 # @param data is the data being stored into the database
@@ -52,6 +69,8 @@ def store_data_to_DB(data):
 # Initializes selenium webdriver to scrape dynamically loaded pages
 def initialize_driver():
     try:
+        import platform
+        
         user_agent = random.choice(USER_AGENTS)
         temp_profile = tempfile.mkdtemp()  
 
@@ -59,17 +78,46 @@ def initialize_driver():
         options.add_argument(f"user-agent={user_agent}")
         options.add_argument("window-size=1280,1000")
         options.add_argument(f"--user-data-dir={temp_profile}")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")  # Required for GitHub Actions and Docker
+        options.add_argument("--disable-dev-shm-usage")  # Required for CI systems
+        options.add_argument("--headless=new")  # Using new headless mode
+        options.add_argument("--disable-gpu")   # Disable GPU acceleration
+        options.add_argument("--disable-extensions")  # Disable extensions
+        
+        # Add CI environment specific options
+        if 'GITHUB_ACTIONS' in os.environ:
+            print("Running in GitHub Actions environment")
+            options.add_argument("--disable-setuid-sandbox")
+            options.add_argument("--disable-infobars")
+            options.add_argument("--single-process")
+        
+        # Platform-specific options
+        if platform.system() == "Windows":
+            # Windows-specific options
+            options.add_argument("--disable-software-rasterizer")
+            options.add_argument("--disable-features=VizDisplayCompositor")
+            options.add_experimental_option('excludeSwitches', ['enable-logging'])
+            options.add_argument("--log-level=3")  # Only show fatal errors
+        else:
+            # Linux-specific options for GitHub Actions
+            options.add_argument("--disable-features=NetworkService")
+            options.add_argument("--disable-dev-tools")
+            options.add_experimental_option("prefs", {
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": False
+            })
 
+        # Create the Chrome WebDriver
         driver = webdriver.Chrome(options=options)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
+        # Configure stealth with platform-specific settings
+        stealth_platform = "Win32" if platform.system() == "Windows" else "Linux x86_64"
         stealth(driver,
             languages=["en-US", "en"],
             vendor="Google Inc.",
-            platform="Win32",
+            platform=stealth_platform,
             webgl_vendor="Intel Inc.",
             renderer="Intel Iris OpenGL Engine",
             fix_hairline=True,
@@ -78,7 +126,10 @@ def initialize_driver():
     except Exception as e:
         print(f"Error initializing driver: {e}")
         if 'temp_profile' in locals():
-            shutil.rmtree(temp_profile)
+            try:
+                shutil.rmtree(temp_profile)
+            except Exception as e2:
+                print(f"Could not remove temp profile: {e2}")
         return None, None
 
 
@@ -245,15 +296,27 @@ def extract_listings(driver, temp_profile):
 
     except Exception as e:
        print(f"Could not scrape page: {e}")
-       driver.quit()
-       shutil.rmtree(temp_profile)
+       try:
+           driver.quit()
+       except:
+           pass
+       try:
+           shutil.rmtree(temp_profile)
+       except:
+           pass
        return []
    
    # Skips location and returns an empty array if there are no listings 
     if total_listings == 0:
         print("No listings found")
-        driver.quit()
-        shutil.rmtree(temp_profile)
+        try:
+            driver.quit()
+        except:
+            pass
+        try:
+            shutil.rmtree(temp_profile)
+        except:
+            pass
         return []
    
    # Finds max pages to know if pages should be progressed through
@@ -264,17 +327,28 @@ def extract_listings(driver, temp_profile):
             listings_html = soup.find_all(listings_selector["elem"], class_=listings_selector["selector"])
 
             print(f"Processed page: {max_pages}")
-            driver.quit()
-            shutil.rmtree(temp_profile)
-
+            try:
+                driver.quit()
+            except:
+                pass
+            try:
+                shutil.rmtree(temp_profile)
+            except:
+                pass
             
             print(f"Sucessfully extracted: {len(listings_html)} listings out of {total_listings}")
             return listings_html
         except Exception as e:
-            print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
-            driver.quit()
-            shutil.rmtree(temp_profile)
-
+            print(f"Unexpected error has occurred: {e}\nOn page: 1")
+            try:
+                driver.quit()
+            except:
+                pass
+            try:
+                shutil.rmtree(temp_profile)
+            except:
+                pass
+            return []
     
     listings_html = []
     # Iterates through each page and scrapes the HTML of each listing
@@ -299,13 +373,25 @@ def extract_listings(driver, temp_profile):
             soup = BeautifulSoup(driver.page_source, "html.parser")
         except Exception as e:
             print(f"Unexpected error has occurred: {e}\nOn page: {page_num}")
+            # Continue with partial results instead of failing
     
     # Scrapes final page of the searched location
-    listings_html += soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
-    print(f"Processed page: {max_pages}")
+    try:
+        listings_html += soup.find_all("div", class_="MapHomeCardReact MapHomeCard reversePosition hasBrokerageKeyFacts")
+        print(f"Processed page: {max_pages}")
+    except Exception as e:
+        print(f"Error processing final page: {e}")
+    
+    try:
+        driver.quit()
+    except Exception as e:
+        print(f"Error quitting driver: {e}")
         
-    driver.quit()
-    shutil.rmtree(temp_profile)
+    try:
+        shutil.rmtree(temp_profile)
+    except Exception as e:
+        print(f"Error removing temp profile: {e}")
+        
     print(f"Sucessfully extracted: {len(listings_html)} listings out of {total_listings}")
     return listings_html
 
