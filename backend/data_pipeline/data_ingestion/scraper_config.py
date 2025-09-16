@@ -76,13 +76,13 @@ ELEMENT_SELECTOR = {
     "button_selector": {"selector": "button[aria-label='next']"},
     "sqft_selector": {"elem":"span", "selector": "bp-Homecard__LockedStat--value"},
     "price_selector": {"elem":"span","selector": "bp-Homecard__Price--value"},
-    "street_address_selector": {"elem":"div", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
-    "city_selector": {"elem": "div", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
-    "state_selector": {"elem":"div", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
-    "zip_selector": {"elem":"div", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
+    "street_address_selector": {"elem":"a", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
+    "city_selector": {"elem": "a", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
+    "state_selector": {"elem":"a", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
+    "zip_selector": {"elem":"a", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
     "bed_selector": {"elem":"span", "selector": "bp-Homecard__Stats--beds text-nowrap"},
     "bath_selector": {"elem":"span", "selector": "bp-Homecard__Stats--beds text-nowrap"},
-    "url_selector": {"elem":"a", "selector": "bp-Homecard bp-InteractiveHomecard MapHomecardWrapper bp-InteractiveHomecard--notInteractive bp-InteractiveHomecard--hideNumIndicator"},
+    "url_selector": {"elem":"a", "selector": "bp-Homecard__Address flex align-center color-text-primary font-body-xsmall-compact"},
     "img_selector": {"elem":"img", "selector": "bp-Homecard__Photo--image"}
 }
 

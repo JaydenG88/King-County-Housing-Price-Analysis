@@ -80,7 +80,7 @@ def initialize_driver():
         options.add_argument(f"--user-data-dir={temp_profile}")
         options.add_argument("--no-sandbox")  # Required for GitHub Actions and Docker
         options.add_argument("--disable-dev-shm-usage")  # Required for CI systems
-        options.add_argument("--headless=new")  # Using new headless mode
+        options.add_argument("--headless=new")   #Using new headless mode
         options.add_argument("--disable-gpu")   # Disable GPU acceleration
         options.add_argument("--disable-extensions")  # Disable extensions
         
@@ -167,7 +167,7 @@ def extract_street_address(listing_soup):
         street_address = address.split(",")[0]
         return filter_string(street_address) if street_address else None
     except Exception as e:
-        print(f"Could not retrieve streed address: {e}")
+        print(f"Could not retrieve street address: {e}")
         return None
 
 def extract_city(listing_soup):
