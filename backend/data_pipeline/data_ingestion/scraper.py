@@ -296,6 +296,12 @@ def extract_listings(driver, temp_profile):
     except Exception as e:
        print(f"Could not scrape page: {e}")
        try:
+           print(f"Page title: {driver.title}")
+           print(f"Current URL: {driver.current_url}")
+           print(f"Page source snippet: {driver.page_source[:2000]}")
+       except Exception as log_err:
+           print(f"Could not log page diagnostics: {log_err}")
+       try:
            driver.quit()
        except:
            pass
