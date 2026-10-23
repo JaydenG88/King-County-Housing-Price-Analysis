@@ -89,7 +89,6 @@ def initialize_driver():
             print("Running in GitHub Actions environment")
             options.add_argument("--disable-setuid-sandbox")
             options.add_argument("--disable-infobars")
-            options.add_argument("--single-process")
         
         # Platform-specific options
         if platform.system() == "Windows":
