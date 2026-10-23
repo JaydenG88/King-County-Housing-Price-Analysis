@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
             <SideBar />
 
             {/* Main scrollable content */}
-          <main className="flex-1 overflow-y-auto bg-gray-100 p-6 pl-64">
+            <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:pl-[15.5rem]">
               {children}
             </main>
           </div>

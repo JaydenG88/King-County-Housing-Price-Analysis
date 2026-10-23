@@ -7,3 +7,7 @@ database/__init__.py
 database/db_setup.py
 housing_data_API/__init__.py
 housing_data_API/app.py
+housing_data_API/routes/__init__.py
+housing_data_API/routes/routes.py
+housing_data_API/services/__init__.py
+housing_data_API/services/housing_services.py

@@ -32,25 +32,27 @@ export default function CorrelationHeatMap({ compact = false }) {
     }, []);
 
     if (loading) return (
-    <div className="flex items-center justify-center min-h-[300px] bg-white shadow-md rounded-lg">
-        <div className="flex flex-col items-center space-y-4">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-gray-600 font-medium">Loading chart data...</span>
+    <div className="flex items-center justify-center min-h-[300px] bg-white border border-slate-200 rounded-xl">
+        <div className="flex flex-col items-center space-y-3">
+        <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-slate-500 text-sm font-medium">Loading chart data…</span>
         </div>
     </div>
     );
-    if (error) return <div>Error: {error.message}</div>;
+    if (error) return <div className="text-sm text-red-600">Error: {error.message}</div>;
 
 
     return (
-        <div className={`bg-white shadow-md rounded-lg ${compact ? "max-w-md mx-auto" : "p-1 w-full md:w-3/4 lg:w-5/6 mx-auto"}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Correlation Heat Map</h2>
+        <div className={`bg-white border border-slate-200 rounded-xl shadow-sm ${compact ? "max-w-md mx-auto" : "w-full"}`}>
+            <div className={compact ? "p-4" : "p-5 border-b border-slate-100"}>
+              <h2 className="text-base font-semibold text-slate-900">Correlation Heat Map</h2>
+            </div>
             {/* Responsive height container */}
             <div
-                className="w-full"
+                className={`w-full ${compact ? "px-2 pb-3" : "px-2 pb-4"}`}
                 style={{
-                height: compact ? "300px" : "calc(100vh - 220px)", 
-                minHeight: "300px",
+                height: compact ? "260px" : "calc(100vh - 230px)",
+                minHeight: "280px",
                 }}
             >
             <ReactApexChart
@@ -58,14 +60,36 @@ export default function CorrelationHeatMap({ compact = false }) {
                 chart: {
                 type: "heatmap",
                 height: "100%",
+                fontFamily: "Inter, sans-serif",
+                toolbar: { show: false },
                 },
                 dataLabels: {
                 enabled: false
                 },
-                xaxis: {
-                categories: data.keys
+                grid: {
+                borderColor: "#e2e8f0",
                 },
-                colors: ["#FF0000", "#00A100"],
+                xaxis: {
+                categories: data.keys,
+                labels: { style: { colors: "#64748b", fontSize: "11px" } },
+                axisBorder: { color: "#e2e8f0" },
+                axisTicks: { color: "#e2e8f0" },
+                },
+                yaxis: {
+                labels: { style: { colors: "#64748b", fontSize: "11px" } },
+                },
+                colors: ["#2563eb"],
+                plotOptions: {
+                heatmap: {
+                    shadeIntensity: 0.6,
+                    colorScale: {
+                    ranges: [
+                        { from: -1, to: -0.01, color: "#f87171", name: "negative" },
+                        { from: 0, to: 1, color: "#2563eb", name: "positive" },
+                    ],
+                    },
+                },
+                },
                 tooltip: {
                 custom: function({ series, seriesIndex, dataPointIndex, w }) {
                     const value = series[seriesIndex][dataPointIndex];
@@ -74,12 +98,13 @@ export default function CorrelationHeatMap({ compact = false }) {
 
                     return `
                     <div style="
-                        color: #000000;  /* 👈 black font color */
+                        color: #0f172a;
                         background-color: #fff;
-                        border: 1px solid #ccc;
+                        border: 1px solid #e2e8f0;
                         padding: 10px;
-                        font-size: 14px;
-                        border-radius: 6px;
+                        font-size: 13px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
                     ">
                         <div><strong>${y} vs ${x}</strong></div>
                         <div>Value: ${value.toFixed(2)}</div>

@@ -1,9 +1,11 @@
 import OverTimeChart from "@/components/charts/OverTimeChart";
+import PageHeader from "@/components/UI/PageHeader";
 
-export default function priceTrendsPage() {
+export default function PriceTrendsPage() {
     return (
-        <div className="p-4 bg-gray-100 min-h-screen">
+        <div className="max-w-6xl mx-auto">
+            <PageHeader title="Average Cost Over Time" subtitle="Track how price and price per square foot have moved over time by region." />
             <OverTimeChart />
         </div>
     );
-    }
+}

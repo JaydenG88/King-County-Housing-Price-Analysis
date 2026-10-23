@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import PageHeader from "@/components/UI/PageHeader";
 
 const CorrelationHeatMap = dynamic(() => import('@/components/charts/CorrelationHeatMap'), {
     ssr: false,
@@ -8,8 +9,9 @@ const CorrelationHeatMap = dynamic(() => import('@/components/charts/Correlation
 
 export default function CorrelationsPage() {
     return (
-      <div className="p-4 bg-gray-100 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+          <PageHeader title="Correlation Heat Map" subtitle="Explore how housing metrics relate to one another across King County." />
           <CorrelationHeatMap />
       </div>
     );
-    }
+}
