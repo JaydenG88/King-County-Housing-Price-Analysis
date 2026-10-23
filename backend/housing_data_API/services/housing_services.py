@@ -1,8 +1,20 @@
 from database.db_setup import get_database
 from pymongo.errors import PyMongoError
 from datetime import datetime
+import math
 
 FINDINGS_COLLECTION = get_database().king_co_housing_findings
+
+# Recursively replaces NaN with None so responses are valid JSON (json.dumps
+# emits a literal NaN token for float NaN, which browsers' JSON.parse rejects)
+def sanitize_nan(value):
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    if isinstance(value, dict):
+        return {k: sanitize_nan(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [sanitize_nan(v) for v in value]
+    return value
 
 def get_averages(metric, type):
     metric = metric.lower()
@@ -12,11 +24,11 @@ def get_averages(metric, type):
         city_averages = list(FINDINGS_COLLECTION.find({"_id": "averages"}))
         key = f"{metric}_{type}"
         
-        return [
+        return sanitize_nan([
             {"region": entry["region"], "value": entry.get(key)}
             for entry in city_averages[0].get("averages", [])
             if key in entry
-        ]
+        ])
         
     except PyMongoError as e:
         print(f"Error fetching city averages: {e}")
@@ -32,7 +44,7 @@ def get_correlations():
             "keys": keys,
             "matrix": matrix
         }
-        return correlations
+        return sanitize_nan(correlations)
     except PyMongoError as e:
         print(f"Error fetching correlations: {e}")
         return None
@@ -45,7 +57,7 @@ def get_lowest_price_per_sqft(region):
             {"best_valued_listings": {"$elemMatch": {"region": region}}}
              ,{"best_valued_listings.$": 1, "_id": 0}
         )
-        return lowest.get("best_valued_listings")[0].get("listings") if lowest else None
+        return sanitize_nan(lowest.get("best_valued_listings")[0].get("listings")) if lowest else None
     except PyMongoError as e:
         print(f"Error fetching lowest price per sqft by city: {e}")
         return None
@@ -59,7 +71,7 @@ def get_price_category_frequency(region):
         
         category_frequency = city_price_categories.get("city_price_categories")[0] if city_price_categories else None
         formatted = [{"category": k, "value": v} for k, v in category_frequency.items() if k != "city"]
-        return formatted
+        return sanitize_nan(formatted)
     
     except PyMongoError as e:
         print(f"Error fetching price category frequency: {e}")
@@ -80,14 +92,14 @@ def get_price_trends(region, metric, type):
         if not region:
             return None
         
-        return [
+        return sanitize_nan([
             {
                 "date": entry["date"],
                 "value": entry.get(f"{metric}_{type}")
             }
             for entry in region.get("price_trends", [])
             if f"{metric}_{type}" in entry
-        ] if region else None
+        ]) if region else None
         
     except PyMongoError as e:       
         print(f"Error fetching price trends: {e}")
