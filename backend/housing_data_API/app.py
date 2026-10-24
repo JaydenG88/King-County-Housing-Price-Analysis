@@ -11,7 +11,7 @@ limiter = Limiter(
 )
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://king-county-housing-price-analysis.vercel.app"])
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 limiter.init_app(app)
 app.register_blueprint(housing_bp, url_prefix="/api")

@@ -5,17 +5,20 @@ from datetime import date, timedelta, datetime
 NUMERIC_COLUMNS = ["price", "sqft", "bathrooms", "bedrooms", "price_per_sqft"]
 
 # Main function that calls analysis functions and stores data to MongoDB
-def analyze_data():
+# @param weeks is how far back "recent" listings go for averages/best-valued calculations.
+# Normally 4 (fits the weekly ETL cadence); widen it for a one-off recompute from stale
+# historical data (e.g. recovering coverage after the pipeline was broken for months).
+def analyze_data(weeks=4):
     housing_data_db = get_database()
     df = initalize_df(housing_data_db)
     # Stores the main findings and function calls
     findings = [
-        averages := { "averages":find_regions_averages(df) + [find_king_co_averages(df)] },
+        averages := { "averages":find_regions_averages(df, weeks) + [find_king_co_averages(df, weeks)] },
         correlations := { "correlations":find_correlations(df) },
-        best_valued_listings := {"best_valued_listings": (find_lowest_regions_price_per_sqft(df)) },
+        best_valued_listings := {"best_valued_listings": (find_lowest_regions_price_per_sqft(df, weeks)) },
         price_frequency_per_city := { "city_price_categories": find_cities_price_category_frequency(df) }
     ]
-    
+
     update_analysis_findings(findings, housing_data_db)
 
 # Initializes the dataframe from cleaned data collection
@@ -36,8 +39,8 @@ def initalize_df(database):
     return pd.DataFrame()
 
 # Finds bi-weekly averages for each numeric category for all of King County
-def find_king_co_averages(df):
-    recent_listings_df = valid_listings_date(df)
+def find_king_co_averages(df, weeks=4):
+    recent_listings_df = valid_listings_date(df, weeks)
     current_time = datetime.now().isoformat()
     
     # Performs averages operations using pandas aggregation method 
@@ -55,9 +58,9 @@ def find_king_co_averages(df):
     return averages_flat
 
 # Finds bi-weekly averages for each city in King County
-def find_regions_averages(df):
-    # Performs averages operations 
-    recent_listings_df = valid_listings_date(df)
+def find_regions_averages(df, weeks=4):
+    # Performs averages operations
+    recent_listings_df = valid_listings_date(df, weeks)
     city_avgs = recent_listings_df.groupby("city")[NUMERIC_COLUMNS].agg(["mean", "median", "std"])
     current_time = datetime.now().isoformat()
 
@@ -69,13 +72,13 @@ def find_regions_averages(df):
     city_avgs["date"] = current_time
     return city_avgs.to_dict(orient="records")
 
-# Returns dataframe with recent listings dating back to 4 weeks
-def valid_listings_date(df):
-    df = df.copy()  
+# Returns dataframe with listings dating back the given number of weeks (default 4)
+def valid_listings_date(df, weeks=4):
+    df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
-    valid_date = pd.Timestamp.now() - timedelta(weeks=4)
+    valid_date = pd.Timestamp.now() - timedelta(weeks=weeks)
     recent_listings_df = df[df["date"] >= valid_date]
-    
+
     return recent_listings_df
 
 
@@ -88,28 +91,28 @@ def find_correlations(df):
     return  {"keys": keys, "matrix": matrix} 
 
 # Helper function that finds top 5 listings with the lowest price/sqft in a region
-def find_lowest_price_per_sqft(df, region=None):
-    recent_df = valid_listings_date(df)
+def find_lowest_price_per_sqft(df, region=None, weeks=4):
+    recent_df = valid_listings_date(df, weeks)
 
     top_5 = {
         "region": region
         }
-    
+
     recent_df = recent_df.sort_values(by="price_per_sqft")
     top_5["listings"] = recent_df.head(5).to_dict(orient="records")
-    
+
     return top_5
 
 # Finds top 5 listings with lowest price/sqft for all regions
-def find_lowest_regions_price_per_sqft(df):
-    
-    recent_df = valid_listings_date(df)
+def find_lowest_regions_price_per_sqft(df, weeks=4):
+
+    recent_df = valid_listings_date(df, weeks)
     lowst_cities = []
     cities_df = recent_df.groupby("city")
-   
+
     for city_name, city_data in cities_df:
-       lowst_cities.append(find_lowest_price_per_sqft(city_data, city_name))
-    lowst_cities.append(find_lowest_price_per_sqft(recent_df, "King County"))
+       lowst_cities.append(find_lowest_price_per_sqft(city_data, city_name, weeks))
+    lowst_cities.append(find_lowest_price_per_sqft(recent_df, "King County", weeks))
        
     return lowst_cities 
 
@@ -198,6 +201,22 @@ def update_average_trend(all_averages, housing_data_db):
     except Exception as e:
         print(f"price_trends could not be updated: {e}")
 
+# Fields holding a per-region/city array in each finding, and the key identifying each entry.
+# A location missing from this pipeline run must not erase other locations' existing entries.
+ARRAY_FIELD_KEYS = {
+    "averages": "region",
+    "best_valued_listings": "region",
+    "city_price_categories": "city"
+}
+
+# Merges new per-region/city entries into an existing array, replacing entries that share
+# an identifying key and keeping existing entries this run didn't touch
+def merge_array_field(existing_array, new_array, id_key):
+    merged = {entry.get(id_key): entry for entry in (existing_array or [])}
+    for entry in new_array:
+        merged[entry.get(id_key)] = entry
+    return list(merged.values())
+
 # Updates and stores all findings to the database
 def update_analysis_findings(findings, database):
     try:
@@ -213,11 +232,21 @@ def update_analysis_findings(findings, database):
 
         # Updates and executes lambda functions for each finding
         for finding in findings:
-            query = next((func(finding) for key, func in query_keys.items() if key in finding), {"_id": "unknown"})
+            field = next((key for key in query_keys if key in finding), None)
+            query = query_keys.get(field, lambda f: {"_id": "unknown"})(finding)
+
+            if field in ARRAY_FIELD_KEYS:
+                id_key = ARRAY_FIELD_KEYS[field]
+                existing_doc = king_co_housing_findings.find_one(query)
+                finding = {field: merge_array_field(
+                    existing_doc.get(field) if existing_doc else None,
+                    finding[field],
+                    id_key
+                )}
 
             king_co_housing_findings.update_one(query, {"$set": finding}, upsert=True)
-        
-        # Updates the average trends    
+
+        # Updates the average trends
         update_average_trend(findings[0]["averages"], database)
 
         print("Findings updated in DB successfully!")

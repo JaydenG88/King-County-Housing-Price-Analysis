@@ -1,8 +1,13 @@
 name: Run ETL Pipeline
 
+# Scheduled runs are disabled: Redfin now blocks GitHub Actions' runner IP ranges
+# (AWS WAF captcha, then CloudFront 403s even after routing around that) and scraping
+# no longer reliably succeeds from hosted runners. See README for details.
+# Re-add the schedule trigger below if a workaround (proxy/self-hosted runner/API
+# migration) is implemented.
 on:
-  schedule:
-    - cron: '0 0 */7 * *'  # Every week
+  # schedule:
+  #   - cron: '0 0 */7 * *'  # Every week
   workflow_dispatch:       # Manual trigger support
 
 jobs:
